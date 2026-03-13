@@ -1,0 +1,883 @@
+#appcommit-sidebar {
+  all: initial;
+  position: fixed !important;
+  top: 50% !important;
+  right: 0 !important;
+  width: 320px !important;
+  min-height: 200px;
+  max-height: 580px !important;
+  display: flex;
+  flex-direction: column;
+  background: #0f0f0f;
+  border: 1px solid #1f1f1f;
+  border-right: none;
+  border-radius: 16px 0 0 16px;
+  box-shadow: -4px 0 40px rgba(0, 0, 0, 0.6), -1px 0 0 rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  color: #ffffff;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  transform: translateY(-50%) translateX(110%) !important;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2147483647 !important;
+}
+
+#appcommit-sidebar.ac-open {
+  transform: translateY(-50%) translateX(0) !important;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+#appcommit-sidebar,
+#appcommit-sidebar *,
+#appcommit-sidebar *::before,
+#appcommit-sidebar *::after,
+#appcommit-tab,
+#appcommit-tab * {
+  box-sizing: border-box;
+}
+
+#appcommit-sidebar .ac-header {
+  height: 48px;
+  min-height: 48px;
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #0f0f0f;
+  border-bottom: 1px solid #1a1a1a;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-logo,
+#appcommit-sidebar .ac-header-left,
+#appcommit-sidebar .ac-header-right {
+  display: flex;
+  align-items: center;
+}
+
+#appcommit-sidebar .ac-header-right {
+  gap: 2px;
+}
+
+#appcommit-sidebar .ac-logo-icon {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-logo-text,
+#appcommit-sidebar .ac-header-title {
+  margin-left: 7px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+#appcommit-sidebar .ac-redetect-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #3f3f46;
+  font-size: 14px;
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s;
+  margin-right: 2px;
+}
+
+#appcommit-sidebar .ac-redetect-btn:hover {
+  background: #1a1a1a;
+  color: #a1a1aa;
+}
+
+#appcommit-sidebar .ac-redetect-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+#appcommit-sidebar .ac-redetect-btn.ac-spinning {
+  animation: ac-spin 0.8s linear infinite;
+  color: #6366f1;
+}
+
+#appcommit-sidebar .ac-close,
+#appcommit-sidebar .ac-close-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: #444444;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+#appcommit-sidebar .ac-close:hover,
+#appcommit-sidebar .ac-close-btn:hover {
+  background: #1a1a1a;
+  color: #888888;
+}
+
+#appcommit-sidebar .ac-state {
+  display: none;
+  flex-direction: column;
+  gap: 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 12px 14px;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a transparent;
+}
+
+#appcommit-sidebar .ac-state[data-active="true"] {
+  display: flex;
+}
+
+#appcommit-sidebar .ac-state::-webkit-scrollbar {
+  width: 4px;
+}
+
+#appcommit-sidebar .ac-state::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#appcommit-sidebar .ac-state::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 2px;
+}
+
+#appcommit-sidebar .ac-state::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+#appcommit-sidebar .ac-portal-badge,
+#appcommit-sidebar .ac-portal-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 3px 8px;
+  margin-bottom: 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(99, 102, 241, 0.1);
+  color: #818cf8;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+#appcommit-sidebar .ac-portal-name {
+  display: block;
+  margin: 0 auto 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+#appcommit-sidebar .ac-job-card {
+  margin-bottom: 12px;
+  background: #161616;
+  border: 1px solid #1e1e1e;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+#appcommit-sidebar .ac-field-row {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+#appcommit-sidebar .ac-field-row:last-child {
+  border-bottom: none;
+}
+
+#appcommit-sidebar .ac-field-label,
+#appcommit-sidebar .ac-section-label {
+  margin-bottom: 3px;
+  color: #333333;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+#appcommit-sidebar .ac-section-label {
+  margin-bottom: 8px;
+}
+
+#appcommit-sidebar .ac-field-value {
+  color: #e4e4e7;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+#appcommit-sidebar .ac-field-editable {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 20px;
+}
+
+#appcommit-sidebar .ac-field-editable .ac-field-value {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+#appcommit-sidebar .ac-edit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #2a2a2a;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s ease, background 0.15s ease, opacity 0.15s ease;
+  opacity: 0;
+}
+
+#appcommit-sidebar .ac-field-row:hover .ac-edit-btn {
+  opacity: 1;
+  color: #52525b;
+}
+
+#appcommit-sidebar .ac-edit-btn:hover {
+  background: #1a1a1a !important;
+  color: #a1a1aa !important;
+}
+
+#appcommit-sidebar .ac-field-input {
+  width: 100%;
+  outline: none;
+  background: #1a1a1a;
+  border: 1px solid #6366f1;
+  border-radius: 5px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 2px 6px;
+  font-family: system-ui, sans-serif;
+}
+
+#appcommit-sidebar .ac-field-input:focus {
+  border-color: #818cf8;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.15);
+}
+
+#appcommit-sidebar .ac-field-value-success {
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+#appcommit-sidebar .ac-status-found {
+  color: #22c55e;
+}
+
+#appcommit-sidebar .ac-status-loading {
+  color: #f59e0b;
+  animation: ac-pulse-text 1.5s ease infinite;
+}
+
+#appcommit-sidebar .ac-status-not-found {
+  color: #3f3f46;
+}
+
+#appcommit-sidebar .ac-divider {
+  height: 1px;
+  margin: 10px 0;
+  background: #1a1a1a;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-section {
+  padding: 0;
+}
+
+#appcommit-sidebar .ac-resume-status-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #0a1a0a;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+#appcommit-sidebar .ac-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+
+#appcommit-sidebar .ac-dot-green {
+  background: #22c55e;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.5);
+}
+
+#appcommit-sidebar .ac-status-title {
+  color: #22c55e;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+#appcommit-sidebar .ac-status-sub {
+  color: #166534;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#appcommit-sidebar .ac-resume-file-row,
+#appcommit-sidebar .ac-resume-found-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #0a1a0a;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+#appcommit-sidebar .ac-file-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-resume-filename {
+  color: #e4e4e7;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: monospace;
+  word-break: break-all;
+  margin-bottom: 2px;
+}
+
+#appcommit-sidebar .ac-resume-tag {
+  color: #22c55e;
+  font-size: 10px;
+  font-weight: 500;
+}
+
+#appcommit-sidebar .ac-tag-uploaded {
+  color: #818cf8;
+}
+
+#appcommit-sidebar .ac-upload-dropzone {
+  width: 100%;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  border: 1.5px dashed #222222;
+  border-radius: 8px;
+  cursor: pointer;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+#appcommit-sidebar .ac-upload-dropzone:hover,
+#appcommit-sidebar .ac-upload-dropzone.drag-over {
+  border-color: #6366f1;
+  background: rgba(99, 102, 241, 0.04);
+}
+
+#appcommit-sidebar .ac-dropzone-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+#appcommit-sidebar .ac-dropzone-text {
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#appcommit-sidebar .ac-dropzone-sub {
+  color: #3f3f46;
+  font-size: 10px;
+}
+
+#appcommit-sidebar .ac-upload-error {
+  margin-top: 6px;
+  color: #ef4444;
+  font-size: 11px;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-manual-divider {
+  color: #2a2a2a;
+  font-size: 10px;
+  text-align: center;
+  margin: 10px 0 6px;
+  position: relative;
+}
+
+#appcommit-sidebar .ac-manual-divider::before,
+#appcommit-sidebar .ac-manual-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  width: 35%;
+  height: 1px;
+  background: #1a1a1a;
+}
+
+#appcommit-sidebar .ac-manual-divider::before {
+  left: 0;
+}
+
+#appcommit-sidebar .ac-manual-divider::after {
+  right: 0;
+}
+
+#appcommit-sidebar .ac-upload-compact {
+  padding: 10px;
+  gap: 4px;
+}
+
+#appcommit-sidebar .ac-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  margin: 4px 0 0;
+}
+
+#appcommit-sidebar .ac-toggle-label {
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+#appcommit-sidebar .ac-toggle-sub {
+  margin-top: 1px;
+  color: #3f3f46;
+  font-size: 10px;
+}
+
+#appcommit-sidebar .ac-toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+#appcommit-sidebar .ac-toggle-slider {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: #222222;
+  cursor: pointer;
+  transition: background 0.25s ease;
+}
+
+#appcommit-sidebar .ac-toggle-slider::before {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #ffffff;
+  transition: transform 0.25s ease;
+}
+
+#appcommit-sidebar .ac-toggle-switch input:checked + .ac-toggle-slider {
+  background: #6366f1;
+}
+
+#appcommit-sidebar .ac-toggle-switch input:checked + .ac-toggle-slider::before {
+  transform: translateX(16px);
+}
+
+#appcommit-sidebar .ac-btn-primary,
+#appcommit-sidebar .ac-btn-secondary,
+#appcommit-sidebar .ac-btn-ghost,
+#appcommit-tab {
+  transition: opacity 0.2s ease, transform 0.2s ease, background 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease, width 0.2s ease;
+}
+
+#appcommit-sidebar .ac-btn-primary {
+  width: 100%;
+  height: 38px;
+  margin: 8px 0 0;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#appcommit-sidebar .ac-btn-primary:hover {
+  opacity: 0.92;
+  transform: translateY(-1px);
+}
+
+#appcommit-sidebar .ac-btn-primary:active {
+  transform: translateY(0);
+}
+
+#appcommit-sidebar .ac-btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+#appcommit-sidebar .ac-btn-secondary {
+  width: 100%;
+  height: 36px;
+  margin: 6px 0;
+  border: 1px solid #222222;
+  border-radius: 8px;
+  background: #161616;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+#appcommit-sidebar .ac-btn-secondary:hover {
+  background: #1e1e1e;
+  color: #ffffff;
+}
+
+#appcommit-sidebar .ac-btn-ghost {
+  width: 100%;
+  padding: 6px;
+  margin: 2px 0 0;
+  border: none;
+  background: transparent;
+  color: #3f3f46;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+#appcommit-sidebar .ac-btn-ghost:hover {
+  color: #71717a;
+}
+
+#appcommit-sidebar .ac-hint {
+  margin: 5px 0 0;
+  color: #2a2a2a;
+  font-size: 10px;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-empty-icon,
+#appcommit-sidebar .ac-auth-icon,
+#appcommit-sidebar .ac-portal-detected-icon {
+  margin: 0 0 10px;
+  font-size: 28px;
+  line-height: 1;
+}
+
+#appcommit-sidebar .ac-empty-title,
+#appcommit-sidebar .ac-auth-title,
+#appcommit-sidebar .ac-portal-detected-title,
+#appcommit-sidebar .ac-success-title,
+#appcommit-sidebar .ac-detecting-msg {
+  margin: 0 0 6px;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-empty-sub,
+#appcommit-sidebar .ac-auth-sub,
+#appcommit-sidebar .ac-portal-detected-sub,
+#appcommit-sidebar .ac-detecting-sub {
+  margin: 0;
+  color: #52525b;
+  font-size: 12px;
+  line-height: 1.5;
+  text-align: center;
+  max-width: 220px;
+  align-self: center;
+}
+
+#appcommit-sidebar .ac-spinner {
+  width: 24px;
+  height: 24px;
+  margin: 16px auto 12px;
+  border: 2px solid #1f1f1f;
+  border-top-color: #6366f1;
+  border-radius: 50%;
+  animation: ac-spin 0.7s linear infinite;
+}
+
+#appcommit-sidebar .ac-auth-steps {
+  width: 100%;
+  margin: 12px 0;
+  padding: 10px;
+  background: #111111;
+  border: 1px solid #1a1a1a;
+  border-radius: 8px;
+}
+
+#appcommit-sidebar .ac-auth-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+#appcommit-sidebar .ac-auth-step:not(:last-child) {
+  border-bottom: 1px solid #161616;
+}
+
+#appcommit-sidebar .ac-auth-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #6366f1;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+#appcommit-sidebar .ac-auth-step-text {
+  color: #71717a;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+#appcommit-sidebar .ac-auth-reason {
+  margin: 8px 0 0;
+  color: #52525b;
+  font-size: 11px;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-manual-form {
+  width: 100%;
+  margin-top: 14px;
+}
+
+#appcommit-sidebar .ac-manual-resume {
+  margin-top: 10px;
+  margin-bottom: 12px;
+}
+
+#appcommit-sidebar .ac-input {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid #1e1e1e;
+  border-radius: 7px;
+  background: #111111;
+  color: #e4e4e7;
+  font-size: 12px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+#appcommit-sidebar .ac-input:focus {
+  border-color: #6366f1;
+}
+
+#appcommit-sidebar .ac-input::placeholder {
+  color: #2a2a2a;
+}
+
+#appcommit-sidebar .ac-textarea {
+  min-height: 104px;
+  resize: vertical;
+  font-family: inherit;
+}
+
+#appcommit-sidebar .ac-success-icon {
+  width: 48px;
+  height: 48px;
+  margin: 16px auto 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  background: rgba(34, 197, 94, 0.08);
+  color: #22c55e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+}
+
+#appcommit-sidebar .ac-success-company {
+  color: #e4e4e7;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-success-role {
+  color: #71717a;
+  font-size: 12px;
+  text-align: center;
+}
+
+#appcommit-sidebar .ac-resume-saved {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 10px 0;
+  color: #52525b;
+  font-size: 11px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono",
+    "Courier New", monospace;
+}
+
+#appcommit-sidebar #ac-state-detecting,
+#appcommit-sidebar #ac-state-portal-detected,
+#appcommit-sidebar #ac-state-auth,
+#appcommit-sidebar #ac-state-error,
+#appcommit-sidebar #ac-state-saved {
+  align-items: center;
+  justify-content: center;
+  padding: 20px 14px;
+  text-align: center;
+}
+
+#appcommit-sidebar #ac-state-portal-detected .ac-divider,
+#appcommit-sidebar #ac-state-saved .ac-divider {
+  width: 100%;
+}
+
+#appcommit-sidebar #ac-state-found {
+  padding-bottom: 12px;
+}
+
+#appcommit-sidebar #ac-state-found .ac-btn-primary {
+  position: sticky;
+  bottom: 22px;
+  margin-top: auto;
+  z-index: 1;
+}
+
+#appcommit-sidebar #ac-state-found .ac-hint {
+  position: sticky;
+  bottom: 0;
+  background: #0f0f0f;
+  padding: 5px 0 0;
+  border-top: 1px solid #1a1a1a;
+  margin-top: 5px;
+}
+
+#appcommit-tab {
+  position: fixed;
+  top: 50%;
+  right: 0;
+  width: 32px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(180deg, #6366f1, #8b5cf6);
+  border-radius: 10px 0 0 10px;
+  box-shadow: -2px 0 16px rgba(99, 102, 241, 0.4);
+  cursor: pointer;
+  transform: translate3d(0, -50%, 0);
+  opacity: 1;
+  pointer-events: auto;
+  z-index: 2147483647 !important;
+}
+
+#appcommit-tab.ac-hidden {
+  transform: translate3d(110%, -50%, 0);
+  opacity: 0;
+  pointer-events: none;
+}
+
+#appcommit-tab:hover {
+  width: 36px;
+  filter: brightness(1.06);
+}
+
+#appcommit-tab .ac-tab-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+#appcommit-tab .ac-tab-logo {
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  transform: rotate(-90deg);
+  display: inline-block;
+  line-height: 1;
+}
+
+#appcommit-tab .ac-tab-text {
+  display: none;
+}
+
+@keyframes ac-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ac-pulse-text {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@media (max-width: 399px) {
+  #appcommit-sidebar {
+    width: 90vw;
+    border-radius: 12px 0 0 12px;
+  }
+}

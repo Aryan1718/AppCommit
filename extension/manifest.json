@@ -1,0 +1,56 @@
+{
+  "manifest_version": 3,
+  "name": "AppCommit",
+  "version": "1.0.0",
+  "description": "Version control for your job applications",
+  "permissions": ["activeTab", "storage", "scripting", "tabs", "alarms"],
+  "host_permissions": [
+    "https://*.greenhouse.io/*",
+    "https://*.myworkdayjobs.com/*",
+    "https://*.lever.co/*",
+    "*://*/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content/content.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "http://localhost:5173/*",
+        "http://localhost:3000/*",
+        "https://appcommit.vercel.app/*"
+      ],
+      "js": ["content/auth-sync.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "content/parsers/llm.js",
+        "content/parsers/greenhouse.js",
+        "content/parsers/workday.js",
+        "content/parsers/lever.js",
+        "utils/candidate-extractor.js",
+        "utils/job-session.js",
+        "utils/resume-capture.js",
+        "utils/api.js",
+        "utils/detect-portal.js",
+        "sidebar/sidebar.js",
+        "sidebar/sidebar.css",
+        "sidebar/sidebar.html"
+      ],
+      "matches": ["<all_urls>"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "AppCommit"
+  }
+}

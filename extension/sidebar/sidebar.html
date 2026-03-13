@@ -1,0 +1,260 @@
+<div id="appcommit-sidebar">
+  <div class="ac-header">
+    <div class="ac-header-left">
+      <div class="ac-logo-icon">A</div>
+      <span class="ac-header-title">AppCommit</span>
+    </div>
+    <div class="ac-header-right">
+      <button
+        class="ac-redetect-btn"
+        id="ac-redetect-btn"
+        type="button"
+        title="Re-detect job details"
+      >
+        ↺
+      </button>
+      <button class="ac-close-btn" id="ac-close-btn" type="button" aria-label="Close AppCommit">✕</button>
+    </div>
+  </div>
+
+  <div class="ac-state" id="ac-state-detecting">
+    <div class="ac-spinner"></div>
+    <p class="ac-detecting-msg">Detecting job details...</p>
+    <p class="ac-detecting-sub">AppCommit is reading the page</p>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-portal-detected">
+    <div class="ac-portal-detected-icon">🎯</div>
+    <div class="ac-portal-name" id="ac-detected-portal-name">Greenhouse</div>
+    <p class="ac-portal-detected-title">Portal Detected</p>
+    <p class="ac-portal-detected-sub">
+      Navigate to a job application form and AppCommit will automatically capture your details.
+    </p>
+    <div class="ac-divider" style="margin: 16px 0"></div>
+    <button class="ac-btn-secondary" id="ac-detect-now-btn" type="button">🔍 Detect Now</button>
+    <p class="ac-hint">Already on an application form? Try detecting manually.</p>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-found">
+    <div class="ac-portal-badge" id="ac-portal-badge">
+      via Greenhouse
+    </div>
+
+    <div class="ac-job-card">
+      <div class="ac-field-row">
+        <div class="ac-field-label">COMPANY</div>
+        <div class="ac-field-editable">
+          <span class="ac-field-value" id="ac-company">—</span>
+          <input class="ac-field-input" id="ac-company-input" type="text" style="display:none" />
+          <button class="ac-edit-btn" id="ac-company-edit" title="Edit" type="button">✎</button>
+        </div>
+      </div>
+
+      <div class="ac-field-row">
+        <div class="ac-field-label">ROLE</div>
+        <div class="ac-field-editable">
+          <span class="ac-field-value" id="ac-role">—</span>
+          <input class="ac-field-input" id="ac-role-input" type="text" style="display:none" />
+          <button class="ac-edit-btn" id="ac-role-edit" title="Edit" type="button">✎</button>
+        </div>
+      </div>
+
+      <div class="ac-field-row">
+        <div class="ac-field-label">JOB DESCRIPTION</div>
+        <div class="ac-field-value-success" id="ac-jd-status">
+        </div>
+      </div>
+    </div>
+
+    <div class="ac-divider"></div>
+
+    <div class="ac-section" id="ac-resume-section">
+      <div class="ac-section-label">RESUME</div>
+
+      <div id="ac-resume-found-state" style="display:none">
+        <div id="ac-resume-watching" style="display:none">
+          <div class="ac-resume-status-row">
+            <div class="ac-status-dot ac-dot-green"></div>
+            <div class="ac-status-info">
+              <div class="ac-status-title">Resume field found</div>
+              <div class="ac-status-sub">
+                Attach your resume to the form above
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="ac-resume-captured" style="display:none">
+          <div class="ac-resume-file-row">
+            <span class="ac-file-icon">📄</span>
+            <div class="ac-resume-info">
+              <div class="ac-resume-filename" id="ac-resume-filename">—</div>
+              <div class="ac-resume-tag">Captured ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="ac-resume-upload-state" style="display:none">
+        <label class="ac-upload-dropzone" id="ac-dropzone">
+          <input
+            type="file"
+            id="ac-file-input"
+            accept=".pdf,.doc,.docx"
+            style="display:none"
+          />
+          <div class="ac-dropzone-icon">📎</div>
+          <div class="ac-dropzone-text">Upload your resume</div>
+          <div class="ac-dropzone-sub">PDF or Word · Max 5MB</div>
+        </label>
+
+        <div id="ac-resume-uploaded" style="display:none">
+          <div class="ac-resume-file-row">
+            <span class="ac-file-icon">📄</span>
+            <div class="ac-resume-info">
+              <div class="ac-resume-filename" id="ac-uploaded-filename">—</div>
+              <div class="ac-resume-tag ac-tag-uploaded">Uploaded ✓</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="ac-upload-error" id="ac-upload-error" style="display:none"></div>
+      </div>
+    </div>
+
+    <div class="ac-divider"></div>
+
+    <div class="ac-toggle-row">
+      <div class="ac-toggle-info">
+        <div class="ac-toggle-label">Auto-save on submit</div>
+        <div class="ac-toggle-sub">
+          Saves when you click submit
+        </div>
+      </div>
+      <label class="ac-toggle-switch">
+        <input type="checkbox" id="ac-autosave" checked>
+        <span class="ac-toggle-slider"></span>
+      </label>
+    </div>
+
+    <button class="ac-btn-primary" id="ac-save-btn" type="button">Save Snapshot Now</button>
+    <p class="ac-hint">or submit the form to auto-save</p>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-no-job">
+    <div class="ac-empty-icon">🔍</div>
+    <p class="ac-empty-title" id="ac-manual-title">Could not detect job</p>
+    <p class="ac-empty-sub" id="ac-manual-sub">
+      AppCommit couldn't read this page automatically. You can save it manually instead.
+    </p>
+
+    <div class="ac-manual-form">
+      <div class="ac-section-label">SAVE MANUALLY</div>
+      <input
+        type="text"
+        id="ac-manual-company"
+        class="ac-input"
+        placeholder="Company name"
+      />
+      <input
+        type="text"
+        id="ac-manual-role"
+        class="ac-input"
+        placeholder="Job title"
+      />
+      <textarea
+        id="ac-manual-description"
+        class="ac-input ac-textarea"
+        placeholder="Job description"
+      ></textarea>
+      <div class="ac-manual-resume">
+        <div class="ac-section-label">RESUME</div>
+        <label class="ac-upload-dropzone" id="ac-manual-save-dropzone">
+          <input
+            type="file"
+            id="ac-manual-save-file-input"
+            accept=".pdf,.doc,.docx"
+            style="display:none"
+          />
+          <div class="ac-dropzone-icon">📎</div>
+          <div class="ac-dropzone-text">Click or drag to upload</div>
+          <div class="ac-dropzone-sub">Optional · PDF or Word · Max 5MB</div>
+        </label>
+        <div class="ac-upload-error hidden" id="ac-manual-save-upload-error"></div>
+        <div id="ac-manual-save-resume-uploaded" class="hidden">
+          <div class="ac-resume-found-box">
+            <span class="ac-file-icon">📄</span>
+            <div class="ac-resume-info">
+              <div class="ac-resume-filename" id="ac-manual-save-resume-name">—</div>
+              <div class="ac-resume-tag ac-tag-uploaded">Uploaded ✓</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="ac-btn-primary" id="ac-manual-save-btn" type="button">Save Snapshot</button>
+    </div>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-saved">
+    <div class="ac-success-icon">✓</div>
+    <div class="ac-success-title">Snapshot Saved!</div>
+    <div class="ac-success-company" id="ac-success-company">Stripe</div>
+    <div class="ac-success-role" id="ac-success-role">Backend Engineer</div>
+    <div class="ac-divider"></div>
+    <div class="ac-resume-saved" id="ac-resume-saved">
+      <span>📄</span>
+      <span id="ac-saved-resume-name">backend_v3.pdf</span>
+    </div>
+    <button class="ac-btn-secondary" id="ac-view-dashboard-btn" type="button">
+      View in Dashboard →
+    </button>
+    <button class="ac-btn-ghost" id="ac-save-another-btn" type="button">Back</button>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-auth">
+    <div class="ac-auth-icon">🔐</div>
+    <p class="ac-auth-title" id="ac-auth-title">Sign in to AppCommit</p>
+    <p class="ac-auth-sub" id="ac-auth-sub">You need to be signed in to capture job snapshots.</p>
+
+    <div class="ac-auth-steps">
+      <div class="ac-auth-step">
+        <div class="ac-auth-step-num">1</div>
+        <div class="ac-auth-step-text">Click the button below to open the dashboard</div>
+      </div>
+      <div class="ac-auth-step">
+        <div class="ac-auth-step-num">2</div>
+        <div class="ac-auth-step-text">Sign in or create a free account</div>
+      </div>
+      <div class="ac-auth-step">
+        <div class="ac-auth-step-num">3</div>
+        <div class="ac-auth-step-text">
+          Come back to this page — you'll be logged in automatically
+        </div>
+      </div>
+    </div>
+
+    <button class="ac-btn-primary" id="ac-open-dashboard-btn" type="button">
+      Open AppCommit Dashboard
+    </button>
+
+    <button class="ac-btn-ghost" id="ac-check-auth-btn" type="button">
+      ↻ I just signed in — check again
+    </button>
+
+    <p class="ac-auth-reason" id="ac-auth-reason"></p>
+  </div>
+
+  <div class="ac-state hidden" id="ac-state-error">
+    <div class="ac-empty-icon">⚠</div>
+    <p class="ac-empty-title" id="ac-error-title">Could not connect</p>
+    <p class="ac-empty-sub" id="ac-error-sub">Make sure the AppCommit backend is running.</p>
+    <button class="ac-btn-ghost" id="ac-retry-btn" type="button">Retry</button>
+  </div>
+</div>
+
+<div id="appcommit-tab" class="hidden">
+  <div class="ac-tab-content">
+    <span class="ac-tab-logo">A</span>
+    <span class="ac-tab-text">AppCommit</span>
+  </div>
+</div>
