@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import ForgotPassword from './pages/ForgotPassword';
 import Home from './pages/Home';
 import Login from './pages/Login';
+import Privacy from './pages/Privacy';
 import Resumes from './pages/Resumes';
 import Signup from './pages/Signup';
 
@@ -16,7 +17,8 @@ function AppLayout({ children }) {
     location.pathname === '/' ||
     location.pathname === '/login' ||
     location.pathname === '/signup' ||
-    location.pathname === '/forgot-password';
+    location.pathname === '/forgot-password' ||
+    location.pathname === '/privacy';
 
   if (isStandalonePage) {
     return children;
@@ -39,6 +41,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/privacy" element={<Privacy />} />
           <Route
             path="/dashboard"
             element={
