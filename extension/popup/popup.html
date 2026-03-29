@@ -1,70 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AppCommit</title>
-    <link rel="stylesheet" href="./popup.css" />
-  </head>
-  <body>
-    <div id="app">
-      <div id="state-loading" class="state">
-        <div class="spinner" aria-label="Loading"></div>
-      </div>
-
-      <div id="state-auth" class="state">
-        <div class="header-bar">
-          <div class="header-title">AppCommit</div>
-        </div>
-        <div class="panel">
-          <p id="auth-message" class="message">Sign in to start tracking</p>
-          <button id="open-dashboard-auth" class="button ghost" type="button">Open Dashboard</button>
-        </div>
-      </div>
-
-      <div id="state-job" class="state">
-        <div class="header-bar">
-          <div class="header-title-wrap">
-            <span class="status-dot" aria-hidden="true"></span>
-            <div class="header-title">AppCommit</div>
-          </div>
-        </div>
-        <div class="panel">
-          <div id="job-company" class="company">Unknown Company</div>
-          <div id="job-title" class="job-title">Unknown role</div>
-          <div id="job-portal" class="portal-badge">via Portal</div>
-          <div id="job-resume" class="resume-status resume-missing">⚠ No resume detected</div>
-          <button id="save-snapshot" class="button primary" type="button">Save Snapshot</button>
-          <div id="job-error" class="error-text" aria-live="polite"></div>
-          <div class="helper-text">or submit the form to auto-save</div>
-        </div>
-      </div>
-
-      <div id="state-idle" class="state">
-        <div class="header-bar">
-          <div class="header-title">AppCommit</div>
-        </div>
-        <div class="panel">
-          <p class="message">Open a job application to capture a snapshot</p>
-          <button id="open-dashboard-idle" class="button ghost" type="button">Open Dashboard</button>
-          <div id="daily-stats" class="helper-text">Today: 0 snapshots saved</div>
-        </div>
-      </div>
-
-      <div id="state-saved" class="state">
-        <div class="header-bar">
-          <div class="header-title">AppCommit</div>
-        </div>
-        <div class="panel saved-panel">
-          <div class="saved-check" aria-hidden="true">✓</div>
-          <div class="saved-title">Snapshot saved!</div>
-          <div id="saved-company" class="company">Unknown Company</div>
-          <div id="saved-job-title" class="job-title">Unknown role</div>
-          <button id="view-dashboard" class="button primary" type="button">View in Dashboard</button>
-        </div>
-      </div>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="logo">A</div>
+      <span class="title">AppCommit</span>
     </div>
 
-    <script type="module" src="./popup.js"></script>
-  </body>
-  </html>
+    <div id="auth-section" style="display:none">
+      <button class="btn-primary" id="btn-signin">
+        Sign In
+      </button>
+      <button class="btn-secondary" id="btn-signup">
+        Sign Up
+      </button>
+    </div>
+
+    <button class="btn-primary" id="btn-sidebar">
+      Open Sidebar
+    </button>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

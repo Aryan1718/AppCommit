@@ -92,7 +92,6 @@ async function syncToken() {
     await chrome.storage.local.set({
       token: session.access_token,
       tokenExpiresAt: expiresAt,
-      userEmail: session?.user?.email ?? null,
     });
 
     const timeUntilExpiry = expiresAt - Date.now();

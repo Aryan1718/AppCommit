@@ -16,6 +16,64 @@ import {
 
 const TOKEN_EXPIRY_ALARM = "appcommit-token-expiry-check";
 const SESSION_KEY_PREFIX = "job_session_";
+const API_BASE_URL = "http://localhost:8000";
+const ALLOWED_API_METHODS = new Set(["GET", "POST"]);
+const ALLOWED_API_PATH_PREFIXES = [
+  "/api/parse-llm",
+  "/api/applications",
+  "/api/resumes",
+  "/api/auth/me",
+  "/api/resumes/upload",
+];
+
+function isPlainObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function isValidTabId(value) {
+  return Number.isInteger(value) && value > 0;
+}
+
+function isValidApiPath(path) {
+  return (
+    typeof path === "string" &&
+    path.startsWith("/") &&
+    !path.includes("://") &&
+    ALLOWED_API_PATH_PREFIXES.some((prefix) => path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`))
+  );
+}
+
+function normalizeApiMethod(value) {
+  const method = typeof value === "string" ? value.toUpperCase() : "GET";
+  return ALLOWED_API_METHODS.has(method) ? method : null;
+}
+
+function normalizeAuthLog(result) {
+  return {
+    authenticated: Boolean(result?.authenticated),
+    reason: result?.reason ?? null,
+  };
+}
+
+function normalizeStoreTokenPayload(message) {
+  const token = typeof message?.token === "string" && message.token.trim() ? message.token : null;
+  const tokenExpiresAt = typeof message?.tokenExpiresAt === "number" ? message.tokenExpiresAt : null;
+  return { token, tokenExpiresAt };
+}
+
+function validateResumePayload(resume) {
+  if (resume == null) {
+    return true;
+  }
+
+  return (
+    isPlainObject(resume) &&
+    typeof resume.filename === "string" &&
+    typeof resume.mimetype === "string" &&
+    typeof resume.size === "number" &&
+    typeof resume.base64 === "string"
+  );
+}
 
 // Stores the per-day popup counter after a successful save.
 async function incrementDailyCount() {
@@ -38,20 +96,27 @@ async function incrementDailyCount() {
 
 function detectPortal(url) {
   const normalizedUrl = typeof url === "string" ? url : "";
+  let hostname = "";
+
+  try {
+    hostname = new URL(normalizedUrl).hostname.toLowerCase();
+  } catch {
+    hostname = normalizedUrl.toLowerCase();
+  }
 
   if (
-    normalizedUrl.includes("greenhouse.io") ||
-    normalizedUrl.includes("job-boards.greenhouse") ||
-    normalizedUrl.includes("boards.greenhouse")
+    hostname.includes("greenhouse.io") ||
+    hostname.includes("job-boards.greenhouse") ||
+    hostname.includes("boards.greenhouse")
   ) {
     return "greenhouse";
   }
 
-  if (normalizedUrl.includes("myworkdayjobs.com")) {
+  if (hostname.includes("myworkdayjobs.com")) {
     return "workday";
   }
 
-  if (normalizedUrl.includes("lever.co")) {
+  if (hostname.includes("lever.co")) {
     return "lever";
   }
 
@@ -203,13 +268,40 @@ async function handleSaveApplication(data) {
 
 async function handleApiFetch(data) {
   const path = typeof data?.path === "string" ? data.path : "";
-  const method = data?.method ?? "GET";
+  const method = normalizeApiMethod(data?.method);
   const body = data?.body ?? null;
+
+  if (!isValidApiPath(path)) {
+    return {
+      ok: false,
+      status: 0,
+      error: "Path not allowed",
+      data: null,
+    };
+  }
+
+  if (!method) {
+    return {
+      ok: false,
+      status: 0,
+      error: "Method not allowed",
+      data: null,
+    };
+  }
+
+  if (body !== null && typeof body !== "string") {
+    return {
+      ok: false,
+      status: 0,
+      error: "Invalid request body",
+      data: null,
+    };
+  }
 
   try {
     const { token } = await chrome.storage.local.get("token");
 
-    const response = await fetch(`${"http://localhost:8000"}${path}`, {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers: {
         "Content-Type": "application/json",
@@ -226,7 +318,7 @@ async function handleApiFetch(data) {
     }
 
     if (response.status === 401) {
-      await chrome.storage.local.remove("token");
+      await clearToken();
       await broadcastAuthMessage("AUTH_EXPIRED", { reason: "token_expired" });
     }
 
@@ -253,6 +345,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       const type = message?.type;
 
       if (type === "SAVE_APPLICATION") {
+        if (!isPlainObject(message?.data) || !validateResumePayload(message.data.resume)) {
+          sendResponse({ success: false, error: "Invalid save payload" });
+          return;
+        }
         sendResponse(await handleSaveApplication(message?.data));
         return;
       }
@@ -269,7 +365,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             ? { authenticated: false, reason: "no_token" }
             : result;
 
-        console.log("[AppCommit Auth] CHECK_AUTH result:", normalized);
+        console.log("[AppCommit Auth] CHECK_AUTH result:", normalizeAuthLog(normalized));
         sendResponse(normalized);
         return;
       }
@@ -280,6 +376,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       if (type === "API_FETCH") {
+        if (!isPlainObject(message?.data)) {
+          sendResponse({ ok: false, status: 0, error: "Invalid request payload", data: null });
+          return;
+        }
         sendResponse(await handleApiFetch(message?.data));
         return;
       }
@@ -290,14 +390,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       if (type === "SAVE_JOB_SESSION") {
-        await saveJobSession(message?.data?.tabId ?? null, message?.data?.jobData ?? null);
+        if (!isValidTabId(message?.data?.tabId) || !isPlainObject(message?.data?.jobData)) {
+          sendResponse({ success: false, error: "Invalid session payload" });
+          return;
+        }
+        await saveJobSession(message?.data.tabId, message.data.jobData);
         sendResponse({ success: true });
         return;
       }
 
       if (type === "GET_JOB_SESSION") {
-        const session = await getJobSession(message?.data?.tabId ?? null);
-        const currentUrl = message?.data?.currentUrl ?? null;
+        if (!isValidTabId(message?.data?.tabId)) {
+          sendResponse({ session: null, error: "Invalid tabId" });
+          return;
+        }
+        const session = await getJobSession(message.data.tabId);
+        const currentUrl = typeof message?.data?.currentUrl === "string" ? message.data.currentUrl : null;
 
         if (session && currentUrl && !isSameJob(session.sourceUrl, currentUrl)) {
           sendResponse({ session: null });
@@ -309,21 +417,29 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       }
 
       if (type === "UPDATE_JOB_SESSION") {
-        await updateJobSession(message?.data?.tabId ?? null, message?.data?.updates ?? {});
+        if (!isValidTabId(message?.data?.tabId) || !isPlainObject(message?.data?.updates)) {
+          sendResponse({ success: false, error: "Invalid session update" });
+          return;
+        }
+        await updateJobSession(message.data.tabId, message.data.updates);
         sendResponse({ success: true });
         return;
       }
 
       if (type === "CLEAR_JOB_SESSION") {
-        await clearJobSession(message?.data?.tabId ?? null);
+        if (!isValidTabId(message?.data?.tabId)) {
+          sendResponse({ success: false, error: "Invalid tabId" });
+          return;
+        }
+        await clearJobSession(message.data.tabId);
         sendResponse({ success: true });
         return;
       }
 
       if (type === "STORE_TOKEN") {
-        await saveToken(message?.token ?? null, {
-          tokenExpiresAt: message?.tokenExpiresAt ?? null,
-          userEmail: message?.userEmail ?? null,
+        const tokenPayload = normalizeStoreTokenPayload(message);
+        await saveToken(tokenPayload.token, {
+          tokenExpiresAt: tokenPayload.tokenExpiresAt,
         });
         sendResponse({ success: true });
         return;

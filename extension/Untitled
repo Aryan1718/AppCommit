@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "AppCommit",
   "version": "1.0.0",
-  "description": "Captures job application details automatically across websites so you can save job snapshots and resumes.",
+  "description": "Version control for your job applications. Automatically captures job details and resume when you apply for jobs.",
 
   "icons": {
     "16": "icons/icon16.png",
@@ -11,7 +11,9 @@
   },
 
   "permissions": [
+    "activeTab",
     "storage",
+    "scripting",
     "tabs",
     "alarms"
   ],
@@ -35,9 +37,7 @@
     {
       "matches": [
         "https://www.appcommit.online/*",
-        "https://appcommit.online/*",
-        "http://localhost/*",
-        "http://127.0.0.1/*"
+        "https://appcommit.online/*"
       ],
       "js": ["content/auth-sync.js"],
       "run_at": "document_idle"
@@ -52,19 +52,22 @@
         "content/parsers/workday.js",
         "content/parsers/lever.js",
         "utils/candidate-extractor.js",
+        "utils/job-session.js",
         "utils/resume-capture.js",
         "utils/api.js",
         "utils/detect-portal.js",
         "sidebar/sidebar.js",
         "sidebar/sidebar.css",
-        "sidebar/sidebar.html"
+        "sidebar/sidebar.html",
+        "icons/icon16.png",
+        "icons/icon48.png",
+        "icons/icon128.png"
       ],
       "matches": ["<all_urls>"]
     }
   ],
 
   "action": {
-    "default_popup": "popup/popup.html",
     "default_icon": {
       "16": "icons/icon16.png",
       "48": "icons/icon48.png",

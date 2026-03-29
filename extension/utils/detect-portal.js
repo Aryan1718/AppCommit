@@ -1,24 +1,31 @@
 // Detects which supported job portal a URL belongs to.
 export function detectPortal(url) {
   const normalizedUrl = typeof url === "string" ? url : "";
+  let hostname = "";
 
-  if (normalizedUrl.includes("jobright")) {
+  try {
+    hostname = new URL(normalizedUrl).hostname.toLowerCase();
+  } catch {
+    hostname = normalizedUrl.toLowerCase();
+  }
+
+  if (hostname.includes("jobright")) {
     return "jobright";
   }
 
   if (
-    normalizedUrl.includes("greenhouse.io") ||
-    normalizedUrl.includes("job-boards.greenhouse") ||
-    normalizedUrl.includes("boards.greenhouse")
+    hostname.includes("greenhouse.io") ||
+    hostname.includes("job-boards.greenhouse") ||
+    hostname.includes("boards.greenhouse")
   ) {
     return "greenhouse";
   }
 
-  if (normalizedUrl.includes("myworkdayjobs.com")) {
+  if (hostname.includes("myworkdayjobs.com")) {
     return "workday";
   }
 
-  if (normalizedUrl.includes("lever.co")) {
+  if (hostname.includes("lever.co")) {
     return "lever";
   }
 

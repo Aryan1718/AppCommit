@@ -1,171 +1,92 @@
-/* Main popup frame and shared state visibility. */
-body {
-  width: 320px;
-  min-height: 200px;
+* {
   margin: 0;
-  font-family: system-ui, sans-serif;
-  background: #0a0a0a;
-  color: #ffffff;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-#app {
-  min-height: 200px;
+body {
+  width: 200px;
+  background: #0f0f0f;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-.state {
-  display: none;
-  min-height: 200px;
+.container {
+  padding: 14px;
+  display: flex;
   flex-direction: column;
-}
-
-.state.active {
-  display: flex;
-}
-
-/* Header styling, including the active job indicator. */
-.header-bar {
-  background: #111111;
-  padding: 12px 16px;
-  border-bottom: 1px solid #222222;
-}
-
-.header-title-wrap {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.header-title {
-  font-weight: 700;
-  font-size: 15px;
-}
-
-.status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #22c55e;
-}
-
-/* Main body layout and text treatments. */
-.panel {
+.header {
   display: flex;
-  flex: 1;
-  flex-direction: column;
-  padding: 16px;
-  gap: 10px;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.message {
-  margin: 0;
-  color: #d4d4d8;
-  line-height: 1.5;
+.logo {
+  width: 22px;
+  height: 22px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 12px;
+  font-weight: 800;
 }
 
-.company {
-  margin-top: 12px;
-  font-size: 18px;
-  font-weight: 700;
-}
-
-.job-title {
-  font-size: 14px;
-  color: #a1a1aa;
-}
-
-.portal-badge {
-  align-self: flex-start;
-  padding: 4px 8px;
-  border-radius: 4px;
-  background: #1e1e2e;
-  color: #818cf8;
-  font-size: 11px;
-}
-
-.resume-status {
+.title {
+  color: white;
   font-size: 13px;
-}
-
-.resume-detected {
-  color: #22c55e;
-}
-
-.resume-missing {
-  color: #f59e0b;
-}
-
-.helper-text {
-  color: #71717a;
-  font-size: 12px;
-}
-
-.error-text {
-  min-height: 16px;
-  color: #f87171;
-  font-size: 12px;
-}
-
-/* Shared button treatments. */
-.button {
-  width: 100%;
-  border: 1px solid transparent;
-  border-radius: 8px;
-  padding: 10px;
-  font: inherit;
-  cursor: pointer;
-}
-
-.button.primary {
-  margin-top: 16px;
-  background: #6366f1;
-  color: #ffffff;
-}
-
-.button.primary:disabled {
-  cursor: default;
-  opacity: 0.7;
-}
-
-.button.ghost {
-  background: transparent;
-  border-color: #333333;
-  color: #ffffff;
-}
-
-/* Loading and success states. */
-#state-loading {
-  align-items: center;
-  justify-content: center;
-}
-
-.spinner {
-  width: 28px;
-  height: 28px;
-  border: 3px solid #2a2a2a;
-  border-top-color: #6366f1;
-  border-radius: 999px;
-  animation: spin 0.9s linear infinite;
-}
-
-.saved-panel {
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-}
-
-.saved-check {
-  font-size: 42px;
-  line-height: 1;
-  color: #22c55e;
-}
-
-.saved-title {
-  font-size: 18px;
   font-weight: 700;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+#auth-section {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.btn-primary {
+  width: 100%;
+  height: 32px;
+  background: linear-gradient(135deg, #6366f1, #7c3aed);
+  border: none;
+  border-radius: 7px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  transition: opacity 0.15s;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  font-size: 10px;
+}
+
+.btn-secondary {
+  width: 100%;
+  height: 32px;
+  background: #161616;
+  border: 1px solid #222;
+  border-radius: 7px;
+  color: #a1a1aa;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: system-ui, sans-serif;
+  transition: background 0.15s, color 0.15s;
+}
+
+.btn-secondary:hover {
+  background: #1e1e1e;
+  color: white;
 }
