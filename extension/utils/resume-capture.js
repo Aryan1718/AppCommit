@@ -68,7 +68,11 @@ function findBestResumeInput(preferredSelector) {
     try {
       const elements = document.querySelectorAll(selector);
       for (const element of elements) {
-        if (element instanceof HTMLInputElement && element.type === "file") {
+        if (
+          element instanceof HTMLInputElement &&
+          element.type === "file" &&
+          !isAppCommitElement(element)
+        ) {
           const existing = candidates.get(element) ?? 0;
           candidates.set(element, existing + scoreResumeInput(element, selector));
         }
@@ -174,6 +178,13 @@ function describeResumeInput(input) {
   }
 
   return 'input[type="file"]';
+}
+
+function isAppCommitElement(element) {
+  return Boolean(
+    element?.closest?.("#appcommit-sidebar") ||
+      element?.closest?.("#appcommit-tab"),
+  );
 }
 
 function normalizeText(value) {

@@ -523,7 +523,7 @@ function extractDescriptionCandidates() {
 
 function findResumeInputSelector() {
   const fileInputs = Array.from(document.querySelectorAll('input[type="file"]')).filter(
-    (element) => element instanceof HTMLInputElement,
+    (element) => element instanceof HTMLInputElement && !isAppCommitElement(element),
   );
 
   if (fileInputs.length === 0) {
@@ -540,12 +540,17 @@ function findResumeInputSelector() {
     }
   }
 
-  if (!bestMatch || bestMatch.score <= 0) {
-    console.log("[AppCommit Extractor] Falling back to generic file input");
-    return "input[type=\"file\"]";
+  if (!bestMatch) {
+    return null;
   }
 
   const selector = buildSelectorForInput(bestMatch.input);
+
+  if (bestMatch.score <= 0) {
+    console.log("[AppCommit Extractor] Low-confidence resume input fallback:", selector);
+    return selector;
+  }
+
   console.log("[AppCommit Extractor] Resume input found:", selector, "score:", bestMatch.score);
   return selector;
 }
@@ -617,27 +622,105 @@ function getResumeContextText(input) {
   return textParts.join(" ");
 }
 
+function isAppCommitElement(element) {
+  return Boolean(
+    element?.closest?.("#appcommit-sidebar") ||
+      element?.closest?.("#appcommit-tab"),
+  );
+}
+
 function buildSelectorForInput(input) {
   if (input.id) {
     return `#${cssEscape(input.id)}`;
   }
 
-  const name = input.getAttribute("name");
-  if (name) {
-    return `input[type="file"][name="${cssEscape(name)}"]`;
+  for (const attribute of ["name", "data-automation-id", "data-testid", "aria-label", "accept"]) {
+    const value = input.getAttribute(attribute);
+    if (value) {
+      return `input[type="file"][${attribute}="${cssEscape(value)}"]`;
+    }
   }
 
-  const ariaLabel = input.getAttribute("aria-label");
-  if (ariaLabel) {
-    return `input[type="file"][aria-label="${cssEscape(ariaLabel)}"]`;
+  const form = input.closest("form");
+  if (form instanceof HTMLFormElement) {
+    const scopedSelector = buildScopedSelector(input, form);
+    if (scopedSelector) {
+      return scopedSelector;
+    }
   }
 
-  const dataTestId = input.getAttribute("data-testid");
-  if (dataTestId) {
-    return `input[type="file"][data-testid="${cssEscape(dataTestId)}"]`;
+  const pathSelector = buildDomPathSelector(input);
+  if (pathSelector) {
+    return pathSelector;
   }
 
-  return "input[type=\"file\"]";
+  return 'input[type="file"]';
+}
+
+function buildScopedSelector(input, boundary) {
+  const formId = boundary.getAttribute("id");
+  const inputPath = buildDomPathSelector(input, boundary);
+
+  if (formId && inputPath) {
+    return `form#${cssEscape(formId)} ${inputPath}`;
+  }
+
+  const formName = boundary.getAttribute("name");
+  if (formName && inputPath) {
+    return `form[name="${cssEscape(formName)}"] ${inputPath}`;
+  }
+
+  return inputPath;
+}
+
+function buildDomPathSelector(element, stopAt = document.body) {
+  if (!(element instanceof Element)) {
+    return null;
+  }
+
+  const segments = [];
+  let current = element;
+
+  while (current && current !== stopAt && current !== document.body) {
+    const segment = getSelectorSegment(current);
+    if (!segment) {
+      return null;
+    }
+    segments.unshift(segment);
+    current = current.parentElement;
+  }
+
+  return segments.join(" > ") || null;
+}
+
+function getSelectorSegment(element) {
+  if (!(element instanceof Element)) {
+    return null;
+  }
+
+  const tagName = element.tagName.toLowerCase();
+
+  if (element.id) {
+    return `${tagName}#${cssEscape(element.id)}`;
+  }
+
+  for (const attribute of ["name", "data-automation-id", "data-testid", "aria-label"]) {
+    const value = element.getAttribute(attribute);
+    if (value) {
+      return `${tagName}[${attribute}="${cssEscape(value)}"]`;
+    }
+  }
+
+  const siblings = Array.from(element.parentElement?.children ?? []).filter(
+    (child) => child.tagName === element.tagName,
+  );
+  const siblingIndex = siblings.indexOf(element);
+
+  if (siblingIndex === -1) {
+    return tagName;
+  }
+
+  return `${tagName}:nth-of-type(${siblingIndex + 1})`;
 }
 
 function cssEscape(value) {

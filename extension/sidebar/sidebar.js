@@ -46,7 +46,8 @@ function buildApi(sidebar, tab, options) {
   let uploadErrorTimeoutId = null;
 
   const elements = {
-    close: sidebar.querySelector("#ac-close-btn") || sidebar.querySelector(".ac-close"),
+    collapse: sidebar.querySelector("#ac-collapse-btn"),
+    dismiss: sidebar.querySelector("#ac-dismiss-btn"),
     redetect: sidebar.querySelector("#ac-redetect-btn"),
     portalBadge: sidebar.querySelector("#ac-portal-badge"),
     company: sidebar.querySelector("#ac-company"),
@@ -103,14 +104,6 @@ function buildApi(sidebar, tab, options) {
 
   clearLegacyHiddenClass(tab);
   setOpen(sidebar.classList.contains("ac-open"));
-
-  elements.close?.addEventListener("click", () => {
-    api.hide();
-  });
-
-  tab.addEventListener("click", () => {
-    api.show();
-  });
 
   elements.saveButton?.addEventListener("click", () => {
     if (typeof saveHandler === "function") {
@@ -280,12 +273,53 @@ function buildApi(sidebar, tab, options) {
   });
 
   const api = {
-    show() {
+    open() {
+      const currentSidebar = document.getElementById(SIDEBAR_ID);
+      const currentTab = document.getElementById(TAB_ID);
+
+      if (currentSidebar instanceof HTMLElement) {
+        currentSidebar.style.transform = "translateY(-50%) translateX(0)";
+      }
+
+      if (currentTab instanceof HTMLElement) {
+        currentTab.style.display = "none";
+      }
+
       setOpen(true);
     },
 
-    hide() {
+    close() {
+      const currentSidebar = document.getElementById(SIDEBAR_ID);
+      const currentTab = document.getElementById(TAB_ID);
+
+      if (currentSidebar instanceof HTMLElement) {
+        currentSidebar.style.transform = "translateY(-50%) translateX(110%)";
+      }
+
+      if (currentTab instanceof HTMLElement) {
+        currentTab.style.display = "flex";
+      }
+
       setOpen(false);
+    },
+
+    dismiss() {
+      const currentSidebar = document.getElementById(SIDEBAR_ID);
+      const currentTab = document.getElementById(TAB_ID);
+      const shadowHost = document.getElementById("appcommit-shadow-host");
+
+      currentSidebar?.remove();
+      currentTab?.remove();
+      shadowHost?.remove();
+      console.log("[AppCommit Sidebar] Dismissed — removed from page");
+    },
+
+    show() {
+      api.open();
+    },
+
+    hide() {
+      api.close();
     },
 
     showState(id) {
@@ -609,6 +643,42 @@ function buildApi(sidebar, tab, options) {
       elements.redetect.addEventListener("click", () => {
         console.log("[AppCommit Sidebar] Re-detect clicked");
         void elements.redetect._appcommitRedetectHandler?.();
+      });
+    },
+
+    onCollapse(fn) {
+      if (!(elements.collapse instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      elements.collapse._appcommitCollapseHandler = typeof fn === "function" ? fn : null;
+
+      if (elements.collapse.dataset.appcommitBound === "true") {
+        return;
+      }
+
+      elements.collapse.dataset.appcommitBound = "true";
+      elements.collapse.addEventListener("click", () => {
+        console.log("[AppCommit Sidebar] Collapsed");
+        elements.collapse._appcommitCollapseHandler?.("collapse");
+      });
+    },
+
+    onDismiss(fn) {
+      if (!(elements.dismiss instanceof HTMLButtonElement)) {
+        return;
+      }
+
+      elements.dismiss._appcommitDismissHandler = typeof fn === "function" ? fn : null;
+
+      if (elements.dismiss.dataset.appcommitBound === "true") {
+        return;
+      }
+
+      elements.dismiss.dataset.appcommitBound = "true";
+      elements.dismiss.addEventListener("click", () => {
+        console.log("[AppCommit Sidebar] Dismissed");
+        elements.dismiss._appcommitDismissHandler?.("dismiss");
       });
     },
 

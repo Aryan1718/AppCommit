@@ -25,6 +25,7 @@ export async function saveToken(token, metadata = {}) {
   };
 
   await chrome.storage.local.set(nextState);
+  await chrome.storage.local.remove("userEmail");
   console.log("[AppCommit Auth] Token saved");
 }
 
@@ -141,7 +142,7 @@ export async function checkAuth() {
     }
 
     const data = await response.json();
-    console.log("[AppCommit Auth] Authenticated as:", data.email);
+    console.log("[AppCommit Auth] Authenticated:", Boolean(data));
     return { authenticated: true, user: data };
   } catch (err) {
     if (isAuthError(err)) {

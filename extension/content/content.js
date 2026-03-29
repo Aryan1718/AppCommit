@@ -33,6 +33,7 @@ let greenhouseObserver = null;
 let manualSaveListenerBound = false;
 let detectNowListenerBound = false;
 let authRecheckListenerBound = false;
+let authStorageListenerBound = false;
 let spaWatcherBound = false;
 let spaWatcherObserver = null;
 let spaWatcherTimeoutId = null;
@@ -42,10 +43,121 @@ let popstateHandler = null;
 let currentResume = null;
 let currentResumeSource = null;
 let resumeInputObserver = null;
+let boundResumeInput = null;
+let boundResumeSelector = null;
 let resumeUploadHandlerBound = false;
 let manualResumeUploadHandlerBound = false;
 let CURRENT_TAB_ID = null;
 let collapsedTabListenerBound = false;
+let dismissedThisSession = false;
+let dismissedHostname = null;
+
+function getHostname(url = window.location.href) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return window.location.hostname;
+  }
+}
+
+async function getSidebarForUrlChange(existingSidebar, currentUrl) {
+  const currentHostname = getHostname(currentUrl);
+
+  if (dismissedThisSession && dismissedHostname && dismissedHostname !== currentHostname) {
+    dismissedThisSession = false;
+    dismissedHostname = null;
+  }
+
+  if (dismissedThisSession) {
+    console.log("[AppCommit] Dismissed — skipping re-detection");
+    return null;
+  }
+
+  if (!document.getElementById("appcommit-sidebar") || !document.getElementById("appcommit-tab")) {
+    return ensureSidebar();
+  }
+
+  return existingSidebar;
+}
+
+function setSidebarSuppressed(isSuppressed) {
+  const sidebar = document.getElementById("appcommit-sidebar");
+  const tab = document.getElementById("appcommit-tab");
+
+  if (sidebar instanceof HTMLElement) {
+    sidebar.style.display = isSuppressed ? "none" : "";
+  }
+
+  if (tab instanceof HTMLElement) {
+    tab.style.display = isSuppressed ? "none" : "";
+  }
+}
+
+function isStateVisible(id) {
+  const state = document.getElementById(id);
+  return state instanceof HTMLElement && !state.classList.contains("hidden");
+}
+
+async function handleTokenStorageChange(oldToken, newToken) {
+  if (!isContextValid() || dismissedThisSession) {
+    return;
+  }
+
+  const hadToken = typeof oldToken === "string" && oldToken.length > 0;
+  const hasToken = typeof newToken === "string" && newToken.length > 0;
+  const sidebarShowingAuth = isStateVisible("ac-state-auth");
+
+  if (!hasToken) {
+    if (sidebarShowingAuth || hadToken) {
+      const sidebar = await ensureSidebar();
+      sidebar.showAuth("no_token");
+    }
+    return;
+  }
+
+  if (!sidebarShowingAuth && hadToken) {
+    return;
+  }
+
+  if (isDetecting) {
+    return;
+  }
+
+  isDetecting = true;
+
+  try {
+    const sidebar = await ensureSidebar();
+    sidebar.showState("ac-state-detecting");
+    sidebar.setDetectingMessage("Sign-in detected. Loading your session...");
+
+    const authResponse = await checkAuthStatus();
+    if (!authResponse?.authenticated) {
+      sidebar.showAuth(authResponse?.reason ?? "no_token");
+      return;
+    }
+
+    await runDetection(sidebar);
+  } finally {
+    isDetecting = false;
+  }
+}
+
+function bindAuthStorageListener() {
+  if (authStorageListenerBound || !isContextValid()) {
+    return;
+  }
+
+  chrome.storage.onChanged.addListener((changes, areaName) => {
+    if (areaName !== "local" || !changes.token) {
+      return;
+    }
+
+    console.log("[AppCommit Auth] Token storage changed");
+    void handleTokenStorageChange(changes.token.oldValue, changes.token.newValue);
+  });
+
+  authStorageListenerBound = true;
+}
 
 function stopAllObservers() {
   urlObserver?.disconnect();
@@ -306,7 +418,10 @@ async function loadParser(portal) {
 async function checkAuthStatus() {
   try {
     const response = await safeMessage({ type: "CHECK_AUTH" });
-    console.log("[AppCommit] Auth check result:", response);
+    console.log("[AppCommit] Auth check result:", {
+      authenticated: Boolean(response?.authenticated),
+      reason: response?.reason ?? null,
+    });
     return response ?? { authenticated: false, reason: "no_token" };
   } catch (error) {
     console.log("[AppCommit] Auth check failed:", error);
@@ -389,6 +504,19 @@ async function ensureSidebar() {
         }
       });
 
+      sidebar.onCollapse(() => {
+        sidebar.close();
+      });
+
+      sidebar.onDismiss(() => {
+        sidebar.dismiss();
+        dismissedThisSession = true;
+        dismissedHostname = getHostname();
+        sidebarInstancePromise = null;
+        collapsedTabListenerBound = false;
+        console.log("[AppCommit] Dismissed for this page session");
+      });
+
       if (!manualSaveListenerBound) {
         document.addEventListener("appcommit-manual-save", async (event) => {
           const manualData = await sanitizeJobData(event?.detail);
@@ -431,7 +559,6 @@ async function ensureSidebar() {
           sidebar.setDetectingMessage("Checking login status...");
 
           const authResponse = await checkAuthStatus();
-          console.log("[AppCommit] Auth check result:", authResponse);
 
           if (!authResponse?.authenticated) {
             sidebar.showAuth(authResponse?.reason ?? "no_token");
@@ -453,7 +580,7 @@ async function ensureSidebar() {
 
 async function initCollapsedTab() {
   const sidebar = await ensureSidebar();
-  sidebar.hide();
+  sidebar.close();
 
   if (collapsedTabListenerBound) {
     return sidebar;
@@ -467,7 +594,7 @@ async function initCollapsedTab() {
   tab.addEventListener("click", () => {
     void (async () => {
       const currentSidebar = await ensureSidebar();
-      currentSidebar.show();
+      currentSidebar.open();
 
       if (isDetecting) {
         return;
@@ -494,7 +621,10 @@ async function initCollapsedTab() {
 
 async function openSidebarForForm(sidebar) {
   const authResponse = await checkAuthStatus();
-  console.log("[AppCommit] Auth status:", authResponse);
+  console.log("[AppCommit] Auth status:", {
+    authenticated: Boolean(authResponse?.authenticated),
+    reason: authResponse?.reason ?? null,
+  });
 
   sidebar.show();
 
@@ -609,59 +739,165 @@ async function fetchDescription(jobData) {
 function stopResumeObserver() {
   resumeInputObserver?.disconnect();
   resumeInputObserver = null;
+  boundResumeInput = null;
+  boundResumeSelector = null;
   formObserver = null;
 }
 
-async function handleResumeDetection(sidebar, resumeInputSelector) {
-  const { readFileAsResume } = await getSupportModules();
-
-  console.log("[AppCommit Resume] Selector:", resumeInputSelector);
-
-  if (resumeInputSelector) {
-    const input = document.querySelector(resumeInputSelector);
-
-    if (input instanceof HTMLInputElement && input.type === "file") {
-      sidebar.showResumeFound();
-
-      input._appcommitResumeChangeHandler = async () => {
-        const file = input.files?.[0];
-        if (!file) {
-          return;
-        }
-
-        console.log("[AppCommit Resume] File attached:", file.name);
-
-        const result = await readFileAsResume(file);
-        if (result.error) {
-          sidebar.showResumeError(result.error);
-          return;
-        }
-
-        currentResume = {
-          ...result,
-          source: "form",
-        };
-        currentResumeSource = "form";
-        sidebar.showResumeCaptured(file.name);
-      };
-
-      if (input.dataset.appcommitResumeDirectBound !== "true") {
-        input.dataset.appcommitResumeDirectBound = "true";
-        input.addEventListener("change", () => {
-          void input._appcommitResumeChangeHandler?.();
-        });
-      }
-
-      if (input.files?.[0]) {
-        await input._appcommitResumeChangeHandler();
-      }
-
-      console.log("[AppCommit Resume] Watching form input directly");
-      return;
-    }
+function getResumeFileSignature(file) {
+  if (!(file instanceof File)) {
+    return null;
   }
 
-  sidebar.showResumeUpload();
+  return [file.name, file.size, file.type].join("::");
+}
+
+function getCurrentResumeSignature() {
+  if (!currentResume) {
+    return null;
+  }
+
+  return [currentResume.filename, currentResume.size, currentResume.mimetype].join("::");
+}
+
+function showExistingResumeState(sidebar) {
+  if (!currentResume?.filename) {
+    return false;
+  }
+
+  if (currentResumeSource === "sidebar" || currentResumeSource === "manual") {
+    sidebar.showResumeUploaded(currentResume.filename);
+    return true;
+  }
+
+  sidebar.showResumeCaptured(currentResume.filename);
+  return true;
+}
+
+async function bindResumeInput(sidebar, input, readFileAsResume, selector) {
+  if (!(input instanceof HTMLInputElement) || input.type !== "file") {
+    return false;
+  }
+
+  const existingFileSignature = getResumeFileSignature(input.files?.[0] ?? null);
+  const currentResumeSignature = getCurrentResumeSignature();
+  const preserveCapturedState = currentResumeSource === "form" && Boolean(currentResumeSignature);
+  const alreadyCapturedSameResume =
+    preserveCapturedState &&
+    Boolean(existingFileSignature) &&
+    existingFileSignature === currentResumeSignature;
+
+  if (!preserveCapturedState) {
+    sidebar.showResumeFound();
+  }
+
+  input._appcommitResumeChangeHandler = async () => {
+    const file = input.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    console.log("[AppCommit Resume] File attached:", file.name);
+
+    const result = await readFileAsResume(file);
+    if (result.error) {
+      sidebar.showResumeError(result.error);
+      return;
+    }
+
+    currentResume = {
+      ...result,
+      source: "form",
+    };
+    currentResumeSource = "form";
+    sidebar.showResumeCaptured(file.name);
+  };
+
+  if (input.dataset.appcommitResumeDirectBound !== "true") {
+    input.dataset.appcommitResumeDirectBound = "true";
+    input.addEventListener("change", () => {
+      void input._appcommitResumeChangeHandler?.();
+    });
+  }
+
+  boundResumeInput = input;
+  boundResumeSelector = selector ?? null;
+
+  if (input.files?.[0] && !alreadyCapturedSameResume) {
+    await input._appcommitResumeChangeHandler();
+  }
+
+  if (!preserveCapturedState) {
+    console.log("[AppCommit Resume] Watching form input directly");
+  } else {
+    console.log("[AppCommit Resume] Rebound resume input without resetting captured state");
+  }
+  return true;
+}
+
+async function handleResumeDetection(sidebar, resumeInputSelector) {
+  const { readFileAsResume, extractResumeInputSelector } = await getSupportModules();
+  let detectionScheduled = false;
+
+  stopResumeObserver();
+
+  const resolveResumeSelector = () => {
+    const preferredSelector =
+      currentJobData?.resume_input_selector ?? resumeInputSelector ?? null;
+
+    if (preferredSelector) {
+      try {
+        const preferredInput = document.querySelector(preferredSelector);
+        if (preferredInput instanceof HTMLInputElement && preferredInput.type === "file") {
+          return preferredSelector;
+        }
+      } catch {
+        // Ignore invalid selectors and fall back to fresh extraction.
+      }
+    }
+
+    const detectedSelector =
+      typeof extractResumeInputSelector === "function" ? extractResumeInputSelector() : null;
+
+    if (detectedSelector && currentJobData) {
+      currentJobData.resume_input_selector = detectedSelector;
+    }
+
+    return detectedSelector;
+  };
+
+  const tryBindResumeInput = async () => {
+    if (boundResumeInput && document.contains(boundResumeInput)) {
+      return true;
+    }
+
+    const selector = resolveResumeSelector();
+    console.log("[AppCommit Resume] Selector:", selector);
+
+    if (!selector) {
+      boundResumeInput = null;
+      boundResumeSelector = null;
+      return false;
+    }
+
+    try {
+      const input = document.querySelector(selector);
+      boundResumeInput = null;
+      return bindResumeInput(sidebar, input, readFileAsResume, selector);
+    } catch {
+      boundResumeInput = null;
+      boundResumeSelector = null;
+      return false;
+    }
+  };
+
+  const hasBoundResumeInput = await tryBindResumeInput();
+
+  if (!hasBoundResumeInput) {
+    if (!showExistingResumeState(sidebar)) {
+      sidebar.showResumeUpload();
+    }
+  }
 
   if (!resumeUploadHandlerBound) {
     sidebar.onResumeUpload(async (file) => {
@@ -678,6 +914,38 @@ async function handleResumeDetection(sidebar, resumeInputSelector) {
     });
     resumeUploadHandlerBound = true;
   }
+
+  if (!(document.body instanceof Element)) {
+    return;
+  }
+
+  resumeInputObserver = new MutationObserver(() => {
+    if (detectionScheduled) {
+      return;
+    }
+
+    detectionScheduled = true;
+    window.setTimeout(() => {
+      detectionScheduled = false;
+      void (async () => {
+        const found = await tryBindResumeInput();
+
+        if (found) {
+          return;
+        }
+
+        if (!showExistingResumeState(sidebar)) {
+          sidebar.showResumeUpload();
+        }
+      })();
+    }, 250);
+  });
+
+  formObserver = resumeInputObserver;
+  resumeInputObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
 }
 
 async function saveCurrentSnapshot() {
@@ -825,8 +1093,6 @@ async function runDetection(sidebar) {
   sidebar.setDetectingMessage("Detecting job details...");
   setSaveButtonState(false);
   stopResumeObserver();
-  currentResume = null;
-  currentResumeSource = null;
 
   activePortal = portal;
   let jobData = {
@@ -1086,18 +1352,24 @@ function watchForFormNavigation(sidebar) {
     console.log("[AppCommit] URL changed:", lastKnownUrl, "→", currentUrl);
     lastKnownUrl = currentUrl;
 
+    const currentSidebar = await getSidebarForUrlChange(sidebar, currentUrl);
+    if (!currentSidebar) {
+      return;
+    }
+
     await new Promise((resolve) => window.setTimeout(resolve, 1500));
 
     const { detectPortal, isApplicationForm } = await getSupportModules();
     const portal = detectPortal(currentUrl);
 
     if (shouldSuppressPage(portal)) {
-      sidebar.hide();
-      stopSpaWatcher();
-      console.log("[AppCommit] Suppressing AppCommit on Jobright");
+      setSidebarSuppressed(true);
+      currentSidebar.hide();
+      console.log("[AppCommit] Jobright handoff detected, waiting for redirect");
       return;
     }
 
+    setSidebarSuppressed(false);
     const onForm = isApplicationForm();
     const shouldAutoRun = onForm && shouldAutoRunPortal(portal);
 
@@ -1111,14 +1383,14 @@ function watchForFormNavigation(sidebar) {
 
       isDetecting = true;
       try {
-        await openSidebarForForm(sidebar);
+        await openSidebarForForm(currentSidebar);
       } finally {
         isDetecting = false;
       }
       return;
     }
 
-    sidebar.hide();
+    currentSidebar.hide();
     console.log("[AppCommit] Sidebar collapsed — manual detect only");
   };
 
@@ -1136,30 +1408,38 @@ function watchForFormNavigation(sidebar) {
       if (isDetecting) {
         return;
       }
-      lastKnownUrl = window.location.href;
-      await new Promise((resolve) => window.setTimeout(resolve, 1500));
-      const { detectPortal, isApplicationForm } = await getSupportModules();
-      const portal = detectPortal(window.location.href);
+      const currentUrl = window.location.href;
+      lastKnownUrl = currentUrl;
 
-      if (shouldSuppressPage(portal)) {
-        sidebar.hide();
-        stopSpaWatcher();
-        console.log("[AppCommit] Suppressing AppCommit on Jobright");
+      const currentSidebar = await getSidebarForUrlChange(sidebar, currentUrl);
+      if (!currentSidebar) {
         return;
       }
 
+      await new Promise((resolve) => window.setTimeout(resolve, 1500));
+      const { detectPortal, isApplicationForm } = await getSupportModules();
+      const portal = detectPortal(currentUrl);
+
+      if (shouldSuppressPage(portal)) {
+        setSidebarSuppressed(true);
+        currentSidebar.hide();
+        console.log("[AppCommit] Jobright handoff detected, waiting for redirect");
+        return;
+      }
+
+      setSidebarSuppressed(false);
       const onForm = isApplicationForm();
       const shouldAutoRun = onForm && shouldAutoRunPortal(portal);
 
       if (!shouldAutoRun) {
-        sidebar.hide();
+        currentSidebar.hide();
         console.log("[AppCommit] Sidebar collapsed — manual detect only");
         return;
       }
 
       isDetecting = true;
       try {
-        await openSidebarForForm(sidebar);
+        await openSidebarForForm(currentSidebar);
       } finally {
         isDetecting = false;
       }
@@ -1185,10 +1465,14 @@ async function main() {
     activePortal = portal;
 
     if (shouldSuppressPage(portal)) {
-      console.log("[AppCommit] Suppressing AppCommit on Jobright");
+      const sidebar = await initCollapsedTab();
+      setSidebarSuppressed(true);
+      watchForFormNavigation(sidebar);
+      console.log("[AppCommit] Jobright handoff detected, waiting for redirect");
       return;
     }
 
+    setSidebarSuppressed(false);
     if (!looksLikeJobPage(portal)) {
       console.log("[AppCommit] Page does not look like a job page, skipping sidebar");
       return;
@@ -1242,6 +1526,25 @@ if (isContextValid()) {
       return false;
     }
 
+    if (message?.type === "OPEN_SIDEBAR") {
+      console.log("[AppCommit] Open sidebar from popup");
+      void (async () => {
+        try {
+          dismissedThisSession = false;
+          dismissedHostname = null;
+
+          const sidebar = await ensureSidebar();
+          sidebar.open();
+          await runDetection(sidebar);
+          sendResponse({ success: true });
+        } catch (error) {
+          console.log("[AppCommit] OPEN_SIDEBAR failed:", error);
+          sendResponse({ success: false });
+        }
+      })();
+      return true;
+    }
+
     if (message?.type !== "PARSE_CURRENT_PAGE") {
       return false;
     }
@@ -1280,6 +1583,7 @@ async function init() {
   }
 
   try {
+    bindAuthStorageListener();
     await initTabId();
     if (CURRENT_TAB_ID === null) {
       console.log("[AppCommit] Warning: running without tab-scoped session support");
