@@ -29,24 +29,6 @@ const principles = [
   'Lets you reopen every submission like a case file',
 ];
 
-const workflow = [
-  {
-    id: '01',
-    title: 'Install the extension',
-    description: 'AppCommit only wakes up on supported job application pages, not across the rest of the web.',
-  },
-  {
-    id: '02',
-    title: 'Apply as usual',
-    description: 'When you submit, the posting, the company, the role, and the resume version are frozen together.',
-  },
-  {
-    id: '03',
-    title: 'Reopen the record later',
-    description: 'Before an interview, open the snapshot and review exactly what the company saw that day.',
-  },
-];
-
 function Home() {
   const [scrolled, setScrolled] = useState(false);
 
@@ -76,12 +58,6 @@ function Home() {
           </Link>
 
           <nav className="hidden items-center gap-6 text-sm text-stone-600 md:flex">
-            <a href="#method" className="transition hover:text-stone-950">
-              Method
-            </a>
-            <a href="#archive" className="transition hover:text-stone-950">
-              Archive
-            </a>
             <Link to="/privacy" className="transition hover:text-stone-950">
               Privacy
             </Link>
@@ -120,12 +96,9 @@ function Home() {
                 <Link to="/dashboard" className="button-primary">
                   Dashboard
                 </Link>
-                <a
-                  href="#method"
-                  className="inline-flex items-center justify-center border border-stone-900/10 bg-white/55 px-6 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-stone-800 transition hover:border-[color:var(--app-accent)] hover:text-[color:var(--app-accent)]"
-                >
-                  See how it works
-                </a>
+                <Link to="/privacy" className="button-secondary">
+                  Privacy
+                </Link>
               </div>
 
               <div className="mt-12 grid gap-4 sm:grid-cols-3">
@@ -192,53 +165,6 @@ function Home() {
           </div>
         </section>
 
-        <section id="method" className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-          <div className="grid gap-6 lg:grid-cols-[0.72fr_1.28fr]">
-            <div className="panel p-8">
-              <p className="eyebrow">Method</p>
-              <h2 className="mt-4 text-4xl font-semibold tracking-[-0.05em] text-stone-950">Built for the moment you need proof.</h2>
-              <p className="mt-5 text-sm leading-7 text-stone-600">
-                Most job trackers remember company names and statuses. AppCommit preserves the actual submission context. That difference matters when interview loops start weeks later.
-              </p>
-            </div>
-
-            <div className="grid gap-5 md:grid-cols-3">
-              {workflow.map((item) => (
-                <article key={item.id} className="dossier-card p-7">
-                  <p className="text-sm uppercase tracking-[0.28em] text-stone-400">{item.id}</p>
-                  <h3 className="mt-5 text-3xl font-semibold tracking-[-0.05em] text-stone-950">{item.title}</h3>
-                  <p className="mt-4 text-sm leading-7 text-stone-600">{item.description}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section id="archive" className="mx-auto max-w-7xl px-4 pb-24 pt-8 sm:px-6 lg:px-8">
-          <div className="rounded-[1.35rem] bg-stone-950 px-6 py-8 text-stone-100 shadow-[0_30px_90px_rgba(18,18,18,0.18)] sm:px-8 lg:px-10">
-            <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:items-end">
-              <div>
-                <p className="eyebrow text-stone-400">Why it feels different</p>
-                <h2 className="mt-4 max-w-xl text-5xl font-semibold tracking-[-0.05em] text-stone-50">This is not another spreadsheet in disguise.</h2>
-                <p className="mt-5 max-w-xl text-sm leading-7 text-stone-400">
-                  The product is built around recall. Open the archive, inspect the exact submission, and walk into interviews with the original record in front of you.
-                </p>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="border border-stone-800 bg-white/5 p-6">
-                  <p className="text-xs uppercase tracking-[0.28em] text-stone-500">Open by default</p>
-                  <p className="mt-4 text-2xl font-semibold">Direct dashboard access, tighter extension scope, archive-first UI.</p>
-                </div>
-                <div className="border border-stone-800 bg-[linear-gradient(135deg,rgba(225,73,45,0.22),rgba(255,255,255,0.04))] p-6">
-                  <p className="text-xs uppercase tracking-[0.28em] text-stone-400">Supported portals</p>
-                  <p className="mt-4 text-2xl font-semibold">Greenhouse, Workday, Lever.</p>
-                  <p className="mt-3 text-sm text-stone-300">More can be added deliberately, not by default.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );

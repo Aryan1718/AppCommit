@@ -149,33 +149,29 @@ function Resumes() {
   return (
     <div className="space-y-8">
       <section className="space-y-2">
-        <h1 className="text-3xl font-semibold tracking-[-0.03em] text-white">Resume Versions</h1>
-        <p className="text-sm leading-7 text-zinc-400">
-          Track which version of your resume went to which companies
+        <p className="eyebrow">Resume archive</p>
+        <h1 className="text-4xl font-semibold tracking-[-0.05em] text-stone-950">Resume Versions</h1>
+        <p className="text-sm leading-7 text-stone-600">
+          Keep your uploaded resume set tidy so every snapshot points back to the exact file you used.
         </p>
       </section>
 
-      <section className="rounded-[1.6rem] border border-zinc-800 bg-zinc-900 p-6 sm:flex sm:items-center sm:justify-between">
+      <section className="panel p-6 sm:flex sm:items-center sm:justify-between">
         <div>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-stone-600">
             Upload files here first so the extension can match resume filenames automatically.
           </p>
         </div>
         <div className="mt-4 sm:mt-0">
           <input ref={fileInputRef} type="file" accept=".pdf,.doc,.docx" onChange={handleFileChange} className="hidden" />
-          <button
-            type="button"
-            onClick={handleUploadClick}
-            className="inline-flex items-center justify-center rounded-xl bg-indigo-500 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-400"
-            disabled={uploading}
-          >
+          <button type="button" onClick={handleUploadClick} className="button-primary" disabled={uploading}>
             {uploading ? 'Uploading...' : 'Upload Resume Version'}
           </button>
         </div>
       </section>
 
       {error || resumesError ? (
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+        <div className="border border-stone-900/12 bg-black px-4 py-3 text-sm text-white">
           {error || resumesError}
         </div>
       ) : null}
@@ -183,12 +179,12 @@ function Resumes() {
       {isFetchingResumes ? (
         <div className="grid gap-4">
           {[1, 2, 3].map((key) => (
-            <div key={key} className="rounded-[1.6rem] border border-zinc-800 bg-zinc-900 p-6">
+            <div key={key} className="panel p-6">
               <div className="space-y-3">
-                <div className="h-5 w-40 animate-pulse rounded bg-zinc-800" />
-                <div className="h-4 w-60 animate-pulse rounded bg-zinc-800" />
-                <div className="h-4 w-44 animate-pulse rounded bg-zinc-800" />
-                <div className="h-4 w-72 animate-pulse rounded bg-zinc-800" />
+                <div className="h-5 w-40 animate-pulse rounded bg-stone-300" />
+                <div className="h-4 w-60 animate-pulse rounded bg-stone-300" />
+                <div className="h-4 w-44 animate-pulse rounded bg-stone-300" />
+                <div className="h-4 w-72 animate-pulse rounded bg-stone-300" />
               </div>
             </div>
           ))}
@@ -200,15 +196,15 @@ function Resumes() {
           {resumes.length ? (
             <div className="space-y-4">
               {resumes.map((resume) => (
-                <div key={resume.id} className="rounded-[1.6rem] border border-zinc-800 bg-zinc-900 p-6">
+                <div key={resume.id} className="dossier-card p-6">
                   <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
                     <div className="space-y-3">
-                      <p className="font-mono text-lg font-semibold text-white">{resume.filename}</p>
-                      <p className="text-sm text-zinc-400">
+                      <p className="font-mono text-lg font-semibold text-stone-950">{resume.filename}</p>
+                      <p className="text-sm text-stone-500">
                         Uploaded {formatDate(resume.uploadedAt)} | {formatFileSize(resume.size)} | {fileTypeLabel(resume.filename)}
                       </p>
-                      <p className="text-sm text-zinc-300">Used in {resume.usedIn || counts[resume.id] || 0} snapshots</p>
-                      <p className="text-sm text-zinc-400">
+                      <p className="text-sm text-stone-700">Used in {resume.usedIn || counts[resume.id] || 0} snapshots</p>
+                      <p className="text-sm text-stone-500">
                         Sent to:{' '}
                         {(companiesByResume[resume.id] || []).slice(0, 3).join(', ') || 'No companies yet'}
                         {(companiesByResume[resume.id] || []).length > 3
@@ -218,28 +214,13 @@ function Resumes() {
                     </div>
 
                     <div className="flex flex-wrap gap-3">
-                      <button
-                        type="button"
-                        onClick={() => handleView(resume)}
-                        className="inline-flex items-center rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-                        disabled={resumeActionId === resume.id}
-                      >
+                      <button type="button" onClick={() => handleView(resume)} className="button-secondary" disabled={resumeActionId === resume.id}>
                         {resumeActionId === resume.id ? 'Loading...' : 'View'}
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDownload(resume)}
-                        className="inline-flex items-center rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-                        disabled={resumeActionId === resume.id}
-                      >
+                      <button type="button" onClick={() => handleDownload(resume)} className="button-secondary" disabled={resumeActionId === resume.id}>
                         Download
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(resume.id)}
-                        className="inline-flex items-center rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-2.5 text-sm font-medium text-zinc-200 transition hover:border-zinc-500 hover:text-white"
-                        disabled={deletingId === resume.id}
-                      >
+                      <button type="button" onClick={() => handleDelete(resume.id)} className="button-secondary" disabled={deletingId === resume.id}>
                         {deletingId === resume.id ? 'Deleting...' : 'Delete'}
                       </button>
                     </div>
@@ -248,9 +229,9 @@ function Resumes() {
               ))}
             </div>
           ) : (
-            <div className="rounded-[1.6rem] border border-dashed border-zinc-800 bg-zinc-900/70 p-10 text-center">
-              <p className="text-lg font-semibold text-white">No resume versions uploaded yet.</p>
-              <p className="mt-2 text-sm text-zinc-400">
+            <div className="border border-dashed border-stone-900/15 bg-white/35 p-10 text-center">
+              <p className="text-lg font-semibold text-stone-950">No resume versions uploaded yet.</p>
+              <p className="mt-2 text-sm text-stone-500">
                 Upload your first resume version to start capturing exact snapshots.
               </p>
             </div>

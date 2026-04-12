@@ -19,7 +19,7 @@ const getEventTitle = (event) => {
 
 function Timeline({ events, resumeFilename, portal }) {
   if (!events?.length) {
-    return <p className="text-sm text-zinc-500">No snapshot history yet.</p>;
+    return <p className="text-sm text-stone-500">No snapshot history yet.</p>;
   }
 
   return (
@@ -27,16 +27,16 @@ function Timeline({ events, resumeFilename, portal }) {
       {events.map((event) => (
         <div key={event.id} className="flex gap-4">
           <div className="mt-1 flex w-5 shrink-0 justify-center">
-            <div className="mt-1 h-2.5 w-2.5 rounded-full bg-indigo-400" />
+            <div className="mt-1 h-2.5 w-2.5 rounded-full bg-[color:var(--app-accent)]" />
           </div>
           <div className="space-y-1.5">
-            <p className="text-sm text-zinc-300">
-              <span className="font-medium text-white">{formatDate(event.date)}</span>
-              <span className="mx-2 text-zinc-600">-</span>
+            <p className="text-sm text-stone-700">
+              <span className="font-medium text-stone-950">{formatDate(event.date)}</span>
+              <span className="mx-2 text-stone-400">-</span>
               {getEventTitle(event)}
             </p>
             {event.type === 'applied' ? (
-              <div className="space-y-1 text-sm text-zinc-500">
+              <div className="space-y-1 text-sm text-stone-500">
                 <p className="font-mono">resume: {resumeFilename || 'resume_not_detected'}</p>
                 <p className="font-mono">portal: {portal}</p>
               </div>

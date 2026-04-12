@@ -11,18 +11,25 @@ const statCard = (count, label, note) => (
 );
 
 const loadingCard = (key) => (
-  <div key={key} className="dossier-card p-6">
-    <div className="flex items-start justify-between gap-4">
+  <div
+    key={key}
+    className="rounded-[1.4rem] border border-[color:var(--app-line)] bg-[rgba(255,255,255,0.76)] p-4 shadow-[0_18px_50px_rgba(18,18,18,0.05)]"
+  >
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] xl:items-center">
       <div className="space-y-3">
         <div className="h-4 w-20 animate-pulse rounded bg-stone-300/70" />
-        <div className="h-8 w-40 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-7 w-40 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-4 w-48 animate-pulse rounded bg-stone-300/70" />
       </div>
-      <div className="h-8 w-24 animate-pulse rounded-full bg-stone-300/70" />
-    </div>
-    <div className="my-5 h-px bg-stone-300/70" />
-    <div className="grid gap-3 sm:grid-cols-2">
-      <div className="h-4 w-32 animate-pulse rounded bg-stone-300/70" />
-      <div className="h-4 w-28 animate-pulse rounded bg-stone-300/70" />
+      <div className="space-y-3">
+        <div className="h-4 w-16 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-4 w-36 animate-pulse rounded bg-stone-300/70" />
+      </div>
+      <div className="flex gap-3">
+        <div className="h-8 w-24 animate-pulse rounded-full bg-stone-300/70" />
+        <div className="h-8 w-24 animate-pulse rounded-full bg-stone-300/70" />
+      </div>
+      <div className="h-10 w-20 animate-pulse rounded bg-stone-300/70" />
     </div>
   </div>
 );
@@ -84,23 +91,14 @@ function Dashboard() {
 
   return (
     <div className="space-y-8 pb-10">
-      <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="panel p-8">
-          <p className="eyebrow">Dashboard</p>
-          <p className="mt-3 text-sm uppercase tracking-[0.22em] text-stone-500">Direct access mode</p>
-          <h1 className="mt-4 max-w-3xl text-5xl text-stone-950">Open any application like a dated case file.</h1>
-          <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
-            Search snapshots by company or role, narrow them by resume and portal, and reopen the exact submission context before interviews.
-          </p>
-        </div>
-
-        <div className="rounded-[2rem] bg-stone-950 p-8 text-stone-100 shadow-[0_28px_70px_rgba(32,18,9,0.16)]">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-stone-500">Archive note</p>
-          <h2 className="mt-4 font-serif text-4xl text-stone-50">Memory is unreliable. Records are not.</h2>
-          <p className="mt-4 text-sm leading-7 text-stone-400">
-            AppCommit is strongest when you need precise recall: what resume you sent, what the posting looked like, and when the application was captured.
-          </p>
-        </div>
+      <section className="panel p-8">
+        <p className="eyebrow">Dashboard</p>
+        <h1 className="mt-4 max-w-3xl text-5xl text-stone-950">
+          Open any application and quickly review what you submitted.
+        </h1>
+        <p className="mt-4 max-w-2xl text-sm leading-7 text-stone-600">
+          Check your resume, job description, and the date you applied in one place before interviews or follow-ups.
+        </p>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
@@ -174,7 +172,7 @@ function Dashboard() {
       ) : null}
 
       {isFetchingApplications ? (
-        <section className="grid gap-4 xl:grid-cols-2">
+        <section className="space-y-3">
           {[1, 2, 3, 4].map((key) => loadingCard(key))}
         </section>
       ) : null}
@@ -189,7 +187,7 @@ function Dashboard() {
       ) : null}
 
       {!isFetchingApplications && filteredApplications.length ? (
-        <section className="grid gap-4 xl:grid-cols-2">
+        <section className="space-y-3">
           {filteredApplications.map((application) => (
             <ApplicationCard key={application.id} application={application} />
           ))}

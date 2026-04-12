@@ -1,10 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
+  :root {
+    --app-paper: #f3f3ef;
+    --app-paper-strong: #e7e7e1;
+    --app-ink: #101010;
+    --app-muted: #5f5f5f;
+    --app-line: rgba(18, 18, 18, 0.12);
+    --app-accent: #14804a;
+    --app-accent-deep: #111111;
+    --app-panel: rgba(255, 255, 255, 0.74);
+    --app-panel-strong: rgba(18, 18, 18, 0.96);
+  }
+
+  html {
+    background:
+      linear-gradient(180deg, #f7f7f3 0%, #ecece7 100%);
+  }
+
   body {
-    @apply bg-stone-50 text-slate-900 antialiased;
+    font-family: 'Instrument Sans', sans-serif;
+    color: var(--app-ink);
+    background:
+      linear-gradient(180deg, #f7f7f3 0%, #ecece7 100%);
+    min-height: 100vh;
+    @apply antialiased;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+      linear-gradient(rgba(18, 18, 18, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(18, 18, 18, 0.035) 1px, transparent 1px);
+    background-size: 100% 40px, 40px 100%;
+    mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.28), transparent 94%);
+    opacity: 0.32;
+    z-index: -1;
+  }
+
+  ::selection {
+    background: rgba(20, 128, 74, 0.18);
+    color: var(--app-ink);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Instrument Sans', sans-serif;
+    letter-spacing: -0.05em;
   }
 
   input,
@@ -16,18 +69,52 @@
 
 @layer components {
   .panel {
-    @apply rounded-2xl border border-stone-200 bg-white shadow-panel;
+    border: 1px solid var(--app-line);
+    background: var(--app-panel);
+    box-shadow:
+      0 22px 60px rgba(18, 18, 18, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.58);
+    @apply rounded-[1.25rem] backdrop-blur-sm;
   }
 
   .input {
-    @apply w-full rounded-xl border border-stone-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400;
+    border: 1px solid rgba(18, 18, 18, 0.14);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--app-ink);
+    @apply w-full rounded-none px-4 py-3 text-sm placeholder:text-stone-400 focus:border-[color:var(--app-accent)];
   }
 
   .button-primary {
-    @apply inline-flex items-center justify-center rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400;
+    background: var(--app-ink);
+    box-shadow: 0 14px 28px rgba(18, 18, 18, 0.1);
+    @apply inline-flex items-center justify-center rounded-none px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-stone-50 transition hover:bg-[color:var(--app-accent)] disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .button-secondary {
-    @apply inline-flex items-center justify-center rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:text-slate-400;
+    border: 1px solid rgba(18, 18, 18, 0.16);
+    background: rgba(255, 255, 255, 0.45);
+    color: var(--app-ink);
+    @apply inline-flex items-center justify-center rounded-none px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] transition hover:border-[color:var(--app-accent)] hover:text-[color:var(--app-accent)] disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .app-shell {
+    color: var(--app-ink);
+    background: linear-gradient(180deg, #f7f7f3 0%, #ecece7 100%);
+    min-height: 100vh;
+  }
+
+  .eyebrow {
+    color: var(--app-accent);
+    letter-spacing: 0.32em;
+    @apply text-[11px] font-semibold uppercase;
+  }
+
+  .dossier-card {
+    border: 1px solid rgba(18, 18, 18, 0.12);
+    background: rgba(255, 255, 255, 0.76);
+    box-shadow:
+      0 24px 70px rgba(18, 18, 18, 0.06),
+      inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    @apply rounded-[1.25rem];
   }
 }
