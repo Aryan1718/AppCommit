@@ -1,0 +1,126 @@
+<svg width="1400" height="860" viewBox="0 0 1400 860" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1400" height="860" fill="#F6F5F0"/>
+  <rect x="40" y="40" width="1320" height="780" rx="28" fill="#FBFAF6" stroke="#D9D6CC" stroke-width="2"/>
+
+  <text x="700" y="105" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="700" fill="#111111">
+    Job Application Tracking: Before vs After AppCommit
+  </text>
+  <text x="700" y="145" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="18" fill="#5F5F5F">
+    From scattered memory to a clean application record with resume, job description, portal, and applied date.
+  </text>
+
+  <rect x="86" y="190" width="580" height="560" rx="28" fill="#FFF7F3" stroke="#E6C3B6" stroke-width="2"/>
+  <rect x="734" y="190" width="580" height="560" rx="28" fill="#F5FBF7" stroke="#B9D8C4" stroke-width="2"/>
+
+  <text x="376" y="248" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#6F2C18">
+    Before AppCommit
+  </text>
+  <text x="376" y="280" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#8A5A46">
+    Manual recall, scattered notes, missing context
+  </text>
+
+  <text x="1024" y="248" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" fill="#145C35">
+    With AppCommit
+  </text>
+  <text x="1024" y="280" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="17" fill="#4C6A57">
+    One saved snapshot per application
+  </text>
+
+  <rect x="126" y="328" width="500" height="88" rx="20" fill="#FFFFFF" stroke="#E6C3B6" stroke-width="2"/>
+  <text x="156" y="366" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    1. Apply on a job site
+  </text>
+  <text x="156" y="394" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    The user submits the application and moves on.
+  </text>
+
+  <rect x="126" y="446" width="500" height="88" rx="20" fill="#FFFFFF" stroke="#E6C3B6" stroke-width="2"/>
+  <text x="156" y="484" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    2. Context gets lost
+  </text>
+  <text x="156" y="512" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    Which resume? What job description? Which portal? What date?
+  </text>
+
+  <rect x="126" y="564" width="500" height="146" rx="20" fill="#FFFFFF" stroke="#E6C3B6" stroke-width="2"/>
+  <text x="156" y="602" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    3. Interview arrives later
+  </text>
+  <text x="156" y="632" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    The user tries to reconstruct the submission from:
+  </text>
+  <text x="180" y="664" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    • browser history
+  </text>
+  <text x="180" y="692" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    • old resume files
+  </text>
+  <text x="376" y="664" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    • memory
+  </text>
+  <text x="376" y="692" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#6A6A6A">
+    • notes and screenshots
+  </text>
+
+  <line x1="376" y1="416" x2="376" y2="446" stroke="#D78D74" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="376,434 368,446 384,446" fill="#D78D74"/>
+  <line x1="376" y1="534" x2="376" y2="564" stroke="#D78D74" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="376,552 368,564 384,564" fill="#D78D74"/>
+
+  <rect x="774" y="322" width="500" height="104" rx="20" fill="#FFFFFF" stroke="#B9D8C4" stroke-width="2"/>
+  <text x="804" y="360" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    1. Apply on a supported job site
+  </text>
+  <text x="804" y="388" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#5F6B63">
+    The extension captures the application at save or submit time.
+  </text>
+  <text x="804" y="412" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#14804A">
+    Greenhouse • Workday • Lever • LLM fallback
+  </text>
+
+  <rect x="774" y="458" width="500" height="116" rx="20" fill="#FFFFFF" stroke="#B9D8C4" stroke-width="2"/>
+  <text x="804" y="496" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    2. AppCommit stores one complete record
+  </text>
+  <text x="804" y="526" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#5F6B63">
+    Company, role, job description, resume version, portal, applied date
+  </text>
+  <text x="804" y="554" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#5F6B63">
+    are saved together in the user-controlled workspace.
+  </text>
+
+  <rect x="774" y="606" width="500" height="104" rx="20" fill="#FFFFFF" stroke="#B9D8C4" stroke-width="2"/>
+  <text x="804" y="644" font-family="Arial, Helvetica, sans-serif" font-size="20" font-weight="700" fill="#111111">
+    3. Open the dashboard later
+  </text>
+  <text x="804" y="672" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#5F6B63">
+    Review the exact resume, snapshot, and timeline before interviews.
+  </text>
+  <text x="804" y="696" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#14804A">
+    Faster recall • Cleaner follow-ups • Better interview prep
+  </text>
+
+  <line x1="1024" y1="426" x2="1024" y2="458" stroke="#5AA06F" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="1024,446 1016,458 1032,458" fill="#5AA06F"/>
+  <line x1="1024" y1="574" x2="1024" y2="606" stroke="#5AA06F" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="1024,594 1016,606 1032,606" fill="#5AA06F"/>
+
+  <rect x="628" y="380" width="144" height="180" rx="20" fill="#111111"/>
+  <text x="700" y="425" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="700" fill="#FFFFFF">
+    AppCommit
+  </text>
+  <text x="700" y="462" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D5D5D5">
+    snapshot
+  </text>
+  <text x="700" y="488" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D5D5D5">
+    resume link
+  </text>
+  <text x="700" y="514" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" fill="#D5D5D5">
+    dashboard
+  </text>
+
+  <line x1="590" y1="470" x2="628" y2="470" stroke="#D78D74" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="616,462 628,470 616,478" fill="#D78D74"/>
+  <line x1="772" y1="470" x2="810" y2="470" stroke="#5AA06F" stroke-width="4" stroke-linecap="round"/>
+  <polygon points="798,462 810,470 798,478" fill="#5AA06F"/>
+</svg>

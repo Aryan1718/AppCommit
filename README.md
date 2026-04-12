@@ -1,36 +1,140 @@
-<div align="center">
+<h1 align="center">AppCommit</h1>
 
-# AppCommit
+<p align="center">
+  <strong>Automatically capture the job description, role, resume, portal, and applied date and time for every application.</strong>
+</p>
 
-![React](https://img.shields.io/badge/frontend-React%2018-61DAFB?logo=react&logoColor=white)
-![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
-![Supabase](https://img.shields.io/badge/storage-Supabase-3ECF8E?logo=supabase&logoColor=white)
-![Extension](https://img.shields.io/badge/browser%20extension-Manifest%20V3-FBBC04?logo=googlechrome&logoColor=white)
+<p align="center">
+  <img src="https://img.shields.io/badge/frontend-React%2018-61DAFB?style=flat-square&logo=react&logoColor=white" alt="React">
+  <img src="https://img.shields.io/badge/backend-FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white" alt="FastAPI">
+  <img src="https://img.shields.io/badge/storage-Supabase-3ECF8E?style=flat-square&logo=supabase&logoColor=white" alt="Supabase">
+  <img src="https://img.shields.io/badge/browser%20extension-Manifest%20V3-FBBC04?style=flat-square&logo=googlechrome&logoColor=white" alt="Manifest V3">
+  <img src="https://img.shields.io/badge/parsing-ATS%20%2B%20LLM-111111?style=flat-square" alt="ATS and LLM parsing">
+  <img src="https://img.shields.io/badge/deployment-self--hosted-14804A?style=flat-square" alt="Self-hosted">
+</p>
 
-Track every job application with the exact resume, job description, portal, and applied date you submitted.
+<br>
 
-</div>
+AppCommit is an open-source job application tracking workspace built for recall. Instead of only saving company names and statuses, it stores the actual submission context so you can later open one record and see:
 
-AppCommit is an open-source job application tracking workspace built for recall. Instead of only saving company names and statuses, it preserves the actual submission context so you can review what you sent before interviews and follow-ups.
+- the exact job description
+- the role and company
+- the resume version you used
+- the portal where you applied
+- the applied date and time
 
-## Features
+That matters because interviews usually happen days or weeks later. By then, the job post may change, the company page may disappear, and it is easy to forget which resume version you sent. AppCommit keeps that context accessible in one place.
 
-- Capture job application snapshots from supported job portals.
-- Store the exact role, company, job description, portal, and applied date.
-- Link each application to the resume version used at the time of submission.
-- Review saved applications in a dashboard with filters and detail views.
-- Manage resume versions in one place.
-- Use portal-specific parsers with an LLM fallback for unsupported pages.
+<p align="center">
+  <img src="./docs/diagrams/appcommit_before_vs_after.svg" alt="Before vs after AppCommit: manual recall vs saved application snapshot" width="88%" />
+</p>
 
-## Stack
+---
 
-| Layer | Technology |
+## Quick Start
+
+```bash
+git clone <your-fork-or-repo-url>
+cd AppCommit
+cp .env.example .env
+docker compose up --build
+node scripts/generate-extension-config.mjs
+```
+
+This starts:
+
+- frontend on `http://localhost:5173`
+- backend on `http://localhost:8000`
+
+Then load the `extension/` directory as an unpacked browser extension.
+
+---
+
+## What AppCommit Captures
+
+When you apply on a supported job site, AppCommit can save:
+
+- job title / role
+- company name
+- job description snapshot
+- resume filename or matched resume version
+- application portal
+- applied date and time
+- source URL
+
+Later, you can open the dashboard and review that exact record before interviews, recruiter follow-ups, or status updates.
+
+---
+
+## How It Works
+
+1. Upload your resumes in the dashboard.
+2. Open a supported application page.
+3. The extension detects the page and captures the submission details.
+4. The backend stores the snapshot in your configured Supabase project.
+5. You reopen the application later from the dashboard with the original context intact.
+
+Supported portals out of the box:
+
+- Greenhouse
+- Workday
+- Lever
+
+For unsupported sites, AppCommit can use an LLM fallback parser to extract the company, role, and job description from the page content.
+
+---
+
+## Why The LLM Is Needed
+
+Some job portals have predictable HTML, so AppCommit can parse them directly with hardcoded selectors. That is the fastest and most reliable path.
+
+But many companies use custom career pages or heavily customized forms. In those cases, the HTML structure is inconsistent and normal selectors are not enough. The LLM fallback exists to:
+
+- identify the job title on unknown pages
+- identify the company name when the page structure is unusual
+- extract the job description from noisy page content
+- return structured data for the save flow
+
+Without the LLM fallback, AppCommit would only work well on a small set of known ATS platforms.
+
+---
+
+## Environment Variables
+
+Use the root `.env.example` as the source of truth for local setup.
+
+| Variable | Why it is needed |
 | --- | --- |
-| Frontend | React, Vite, Tailwind CSS, Zustand |
-| Backend | FastAPI, Pydantic, Uvicorn |
-| Storage | Supabase Database + Storage |
-| Extension | Vanilla JavaScript, Chrome Manifest V3 |
-| Parsing | Hardcoded portal parsers + Anthropic-powered fallback |
+| `SUPABASE_URL` | Connects the backend to your Supabase project. |
+| `SUPABASE_SERVICE_KEY` | Lets the backend read and write application and resume records securely. |
+| `SUPABASE_RESUME_BUCKET` | Tells the backend which storage bucket should hold uploaded resumes. |
+| `ANTHROPIC_API_KEY` | Used by the backend when the LLM fallback parser needs to read an unsupported job page. |
+| `ANTHROPIC_MODEL` | Selects the model used for fallback parsing of unknown job portals. |
+| `VITE_API_URL` | Tells the frontend where the backend API is running. |
+| `EXTENSION_API_BASE_URL` | Tells the browser extension where to send captured application data. |
+| `EXTENSION_DASHBOARD_URL` | Lets the extension open the main web dashboard. |
+| `EXTENSION_DASHBOARD_APP_URL` | Lets the extension jump directly to the dashboard application view. |
+
+### Example
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-supabase-service-key
+SUPABASE_RESUME_BUCKET=resumes
+
+ANTHROPIC_API_KEY=your-anthropic-api-key
+ANTHROPIC_MODEL=claude-sonnet-4-20250514
+
+VITE_API_URL=http://localhost:8000
+
+EXTENSION_API_BASE_URL=http://localhost:8000
+EXTENSION_DASHBOARD_URL=http://localhost:5173
+EXTENSION_DASHBOARD_APP_URL=http://localhost:5173/dashboard
+```
+
+If you do not want LLM fallback parsing, you can leave the Anthropic values unset, but parsing on unsupported portals will not work.
+
+---
 
 ## Repository Structure
 
@@ -45,47 +149,7 @@ AppCommit/
 └── .env.example # Shared environment template
 ```
 
-## How It Works
-
-1. Add your resumes in the dashboard.
-2. Open a supported application page.
-3. The browser extension captures job details when you save or submit.
-4. AppCommit stores the application snapshot with the resume version used.
-5. Later, you can open the dashboard and review the exact submission details.
-
-## Quick Start
-
-### 1. Clone and configure
-
-```bash
-git clone <your-fork-or-repo-url>
-cd AppCommit
-cp .env.example .env
-```
-
-Update `.env` with your own values before starting the app.
-
-### 2. Run with Docker Compose
-
-```bash
-docker compose up --build
-```
-
-Services:
-
-- Frontend: `http://localhost:5173`
-- Backend: `http://localhost:8000`
-
-After the app is running, generate the extension config:
-
-```bash
-node scripts/generate-extension-config.mjs
-```
-
-This generates:
-
-- `extension/config.js`
-- `extension/manifest.json`
+---
 
 ## Manual Development
 
@@ -109,43 +173,13 @@ uvicorn main:app --reload --port 8000
 
 ### Extension
 
-Generate the extension runtime config from the repository root:
-
 ```bash
 node scripts/generate-extension-config.mjs
 ```
 
-Then load the `extension/` directory as an unpacked extension in your browser.
+Then load `extension/` as an unpacked extension in your browser.
 
-## Environment Variables
-
-Use the root `.env.example` as the source of truth for local setup.
-
-### Backend
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_KEY`
-- `SUPABASE_RESUME_BUCKET`
-- `ANTHROPIC_API_KEY`
-- `ANTHROPIC_MODEL`
-
-### Frontend
-
-- `VITE_API_URL`
-
-### Extension
-
-- `EXTENSION_API_BASE_URL`
-- `EXTENSION_DASHBOARD_URL`
-- `EXTENSION_DASHBOARD_APP_URL`
-
-## Supported Portals
-
-- Greenhouse
-- Workday
-- Lever
-
-Other sites can be handled through the LLM parsing fallback when configured.
+---
 
 ## API
 
@@ -157,18 +191,15 @@ The backend exposes:
 - `/api/auth`
 - `/api/parse-llm`
 
-Run the backend locally and open `http://localhost:8000/health` to verify the service is up.
+Open `http://localhost:8000/health` to verify the API is up.
 
-## Deployment
-
-- Frontend: Vercel
-- Backend: Render or Railway
-- Database and file storage: Supabase
-- Browser extension: Chrome Web Store or local unpacked install
+---
 
 ## Privacy Model
 
-AppCommit is designed around user-controlled storage. Application records and resumes are stored in the database and storage services you configure for your deployment. The project is intended to help users manage their own application history rather than collect it for a centralized service.
+AppCommit is designed around user-controlled storage. Application records and resumes are stored in the database and storage services you configure for your own deployment. The project is intended to help users manage their own application history, not collect it for a centralized service.
+
+---
 
 ## Documentation
 
@@ -177,6 +208,8 @@ AppCommit is designed around user-controlled storage. Application records and re
 - [Extension notes](./docs/EXTENSION.md)
 - [Parser notes](./docs/PARSERS.md)
 
+---
+
 ## Contributing
 
-Issues and pull requests are welcome. If you plan to make larger changes, open an issue first so the implementation direction is clear before work starts.
+Issues and pull requests are welcome. If you plan to make larger changes, open an issue first so implementation direction is clear before work starts.
