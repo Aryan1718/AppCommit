@@ -1,3 +1,5 @@
+<div align="center">
+
 # AppCommit
 
 ![React](https://img.shields.io/badge/frontend-React%2018-61DAFB?logo=react&logoColor=white)
@@ -6,6 +8,8 @@
 ![Extension](https://img.shields.io/badge/browser%20extension-Manifest%20V3-FBBC04?logo=googlechrome&logoColor=white)
 
 Track every job application with the exact resume, job description, portal, and applied date you submitted.
+
+</div>
 
 AppCommit is an open-source job application tracking workspace built for recall. Instead of only saving company names and statuses, it preserves the actual submission context so you can review what you sent before interviews and follow-ups.
 
