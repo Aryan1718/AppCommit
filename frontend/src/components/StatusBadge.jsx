@@ -1,8 +1,8 @@
 const statusMap = {
-  applied: 'bg-blue-50 text-blue-700 ring-blue-200',
-  interview: 'bg-amber-50 text-amber-700 ring-amber-200',
-  offer: 'bg-emerald-50 text-emerald-700 ring-emerald-200',
-  rejected: 'bg-slate-100 text-slate-600 ring-slate-200',
+  applied: 'border-stone-900/12 bg-stone-200/80 text-stone-800',
+  interview: 'border-[color:var(--app-accent)]/20 bg-[color:var(--app-accent)]/10 text-[color:var(--app-accent)]',
+  offer: 'border-[color:var(--app-accent)]/28 bg-[color:var(--app-accent)]/16 text-[color:var(--app-accent)]',
+  rejected: 'border-stone-900/10 bg-stone-200/70 text-stone-700',
 };
 
 const labelMap = {
@@ -17,7 +17,9 @@ function StatusBadge({ status }) {
   const label = labelMap[status] || 'Unknown';
 
   return (
-    <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-medium ring-1 ring-inset ${classes}`}>
+    <span
+      className={`inline-flex rounded-full border px-3 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] ${classes}`}
+    >
       {label}
     </span>
   );

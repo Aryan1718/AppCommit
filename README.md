@@ -1,46 +1,89 @@
 # AppCommit
 
-AppCommit is a job application tracking platform that captures application snapshots, stores resume versions, and helps users review exactly what was submitted for each role.
+![React](https://img.shields.io/badge/frontend-React%2018-61DAFB?logo=react&logoColor=white)
+![FastAPI](https://img.shields.io/badge/backend-FastAPI-009688?logo=fastapi&logoColor=white)
+![Supabase](https://img.shields.io/badge/storage-Supabase-3ECF8E?logo=supabase&logoColor=white)
+![Extension](https://img.shields.io/badge/browser%20extension-Manifest%20V3-FBBC04?logo=googlechrome&logoColor=white)
 
-The system includes:
-- A React dashboard for resume management and application history
-- A FastAPI backend for application, resume, and parsing APIs
-- Supabase for database access and file storage
+Track every job application with the exact resume, job description, portal, and applied date you submitted.
 
-## Core Capabilities
+AppCommit is an open-source job application tracking workspace built for recall. Instead of only saving company names and statuses, it preserves the actual submission context so you can review what you sent before interviews and follow-ups.
 
-- Dashboard for browsing and reviewing application snapshots
-- Resume upload and version tracking
-- Application detail views with timeline history
-- LLM-assisted parsing support for job metadata extraction
+## Features
 
-## Architecture
+- Capture job application snapshots from supported job portals.
+- Store the exact role, company, job description, portal, and applied date.
+- Link each application to the resume version used at the time of submission.
+- Review saved applications in a dashboard with filters and detail views.
+- Manage resume versions in one place.
+- Use portal-specific parsers with an LLM fallback for unsupported pages.
 
-- `frontend/`: Vite + React application
-- `backend/`: FastAPI service
-- `supabase/`: database and platform-related assets
-- `extension/`: browser extension source
-- `.env.example`: shared local environment template
+## Stack
 
-## Local Development
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, Vite, Tailwind CSS, Zustand |
+| Backend | FastAPI, Pydantic, Uvicorn |
+| Storage | Supabase Database + Storage |
+| Extension | Vanilla JavaScript, Chrome Manifest V3 |
+| Parsing | Hardcoded portal parsers + Anthropic-powered fallback |
 
-### Docker Compose
+## Repository Structure
+
+```text
+AppCommit/
+├── frontend/    # React dashboard
+├── backend/     # FastAPI API
+├── extension/   # Browser extension
+├── supabase/    # SQL migrations
+├── docs/        # Product and architecture notes
+├── scripts/     # Project utilities
+└── .env.example # Shared environment template
+```
+
+## How It Works
+
+1. Add your resumes in the dashboard.
+2. Open a supported application page.
+3. The browser extension captures job details when you save or submit.
+4. AppCommit stores the application snapshot with the resume version used.
+5. Later, you can open the dashboard and review the exact submission details.
+
+## Quick Start
+
+### 1. Clone and configure
+
+```bash
+git clone <your-fork-or-repo-url>
+cd AppCommit
+cp .env.example .env
+```
+
+Update `.env` with your own values before starting the app.
+
+### 2. Run with Docker Compose
 
 ```bash
 docker compose up --build
 ```
 
-This starts:
-- frontend on `http://localhost:5173`
-- backend on `http://localhost:8000`
+Services:
 
-Use the repository root `.env.example` as the template for `.env` before starting Compose.
+- Frontend: `http://localhost:5173`
+- Backend: `http://localhost:8000`
 
-When the app containers are running, generate the browser extension config from the same root `.env`:
+After the app is running, generate the extension config:
 
 ```bash
 node scripts/generate-extension-config.mjs
 ```
+
+This generates:
+
+- `extension/config.js`
+- `extension/manifest.json`
+
+## Manual Development
 
 ### Frontend
 
@@ -49,25 +92,6 @@ cd frontend
 npm install
 npm run dev
 ```
-
-Required frontend environment variables:
-- `VITE_API_URL`
-
-Before loading the browser extension locally, generate its runtime config:
-
-```bash
-node scripts/generate-extension-config.mjs
-```
-
-This generates:
-- `extension/config.js`
-- `extension/manifest.json`
-
-Privacy defaults for the generated extension:
-- injects only on supported ATS/job domains
-- requests host access only to your configured backend API origin
-
-Use the repository root `.env.example` as the single local template for frontend, backend, and extension variables.
 
 ### Backend
 
@@ -79,34 +103,76 @@ pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-Required backend environment variables:
+### Extension
+
+Generate the extension runtime config from the repository root:
+
+```bash
+node scripts/generate-extension-config.mjs
+```
+
+Then load the `extension/` directory as an unpacked extension in your browser.
+
+## Environment Variables
+
+Use the root `.env.example` as the source of truth for local setup.
+
+### Backend
+
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_KEY`
 - `SUPABASE_RESUME_BUCKET`
 - `ANTHROPIC_API_KEY`
 - `ANTHROPIC_MODEL`
 
-Required extension environment variables:
+### Frontend
+
+- `VITE_API_URL`
+
+### Extension
+
 - `EXTENSION_API_BASE_URL`
 - `EXTENSION_DASHBOARD_URL`
 - `EXTENSION_DASHBOARD_APP_URL`
 
-Use the checked-in root `.env.example` as the template and keep the real `.env` file untracked.
+## Supported Portals
+
+- Greenhouse
+- Workday
+- Lever
+
+Other sites can be handled through the LLM parsing fallback when configured.
+
+## API
+
+The backend exposes:
+
+- `/health`
+- `/api/applications`
+- `/api/resumes`
+- `/api/auth`
+- `/api/parse-llm`
+
+Run the backend locally and open `http://localhost:8000/health` to verify the service is up.
 
 ## Deployment
 
 - Frontend: Vercel
 - Backend: Render or Railway
-- Database and storage: Supabase
-- Browser extension: Chrome Web Store
+- Database and file storage: Supabase
+- Browser extension: Chrome Web Store or local unpacked install
 
-## Usage
+## Privacy Model
 
-1. Open the web application.
-2. Upload and manage resume versions.
-3. Review captured application snapshots in the dashboard.
-4. Open an application record to inspect its metadata, attached resume, and timeline.
+AppCommit is designed around user-controlled storage. Application records and resumes are stored in the database and storage services you configure for your deployment. The project is intended to help users manage their own application history rather than collect it for a centralized service.
 
-## Notes
+## Documentation
 
-This repository is structured for separate frontend and backend deployments. Configure environment variables per service and connect the backend to your own Supabase project.
+- [Frontend notes](./docs/FRONTEND.md)
+- [Backend notes](./docs/BACKEND.md)
+- [Extension notes](./docs/EXTENSION.md)
+- [Parser notes](./docs/PARSERS.md)
+
+## Contributing
+
+Issues and pull requests are welcome. If you plan to make larger changes, open an issue first so the implementation direction is clear before work starts.

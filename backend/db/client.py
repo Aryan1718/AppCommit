@@ -15,6 +15,10 @@ def _require_env(name: str) -> str:
     return value
 
 
+def require_env(name: str) -> str:
+    return _require_env(name)
+
+
 @lru_cache(maxsize=1)
 def get_supabase_client() -> Client:
     url = _require_env("SUPABASE_URL")
