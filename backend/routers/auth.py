@@ -1,15 +1,13 @@
-from fastapi import APIRouter, Depends
-
-from dependencies import get_current_user
+from fastapi import APIRouter
 
 
 router = APIRouter()
 
 
 @router.get("/me")
-async def get_me(user=Depends(get_current_user)) -> dict[str, str | bool | None]:
+async def get_me() -> dict[str, str | bool | None]:
     return {
-        "id": str(user.id),
-        "email": user.email,
+        "mode": "workspace",
         "authenticated": True,
+        "requires_login": False,
     }

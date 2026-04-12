@@ -1,28 +1,28 @@
 document.addEventListener("DOMContentLoaded", async () => {
-  const { token } = await chrome.storage.local.get("token");
+  const runtimeConfig = await chrome.runtime.sendMessage({ type: "GET_RUNTIME_CONFIG" });
+  const statusMessage = document.getElementById("status-message");
+  const sidebarButton = document.getElementById("btn-sidebar");
+  const dashboardButton = document.getElementById("btn-dashboard");
 
-  if (!token) {
-    const authSection = document.getElementById("auth-section");
-    if (authSection instanceof HTMLElement) {
-      authSection.style.display = "flex";
+  const showStatusMessage = (message) => {
+    if (statusMessage instanceof HTMLElement) {
+      statusMessage.textContent = message;
+      statusMessage.style.display = "block";
     }
-  }
+  };
 
-  document.getElementById("btn-signin")?.addEventListener("click", () => {
+  dashboardButton?.addEventListener("click", () => {
+    if (!runtimeConfig?.dashboardAppUrl) {
+      return;
+    }
+
     chrome.tabs.create({
-      url: "https://www.appcommit.online/login",
+      url: runtimeConfig.dashboardAppUrl,
     });
     window.close();
   });
 
-  document.getElementById("btn-signup")?.addEventListener("click", () => {
-    chrome.tabs.create({
-      url: "https://www.appcommit.online/signup",
-    });
-    window.close();
-  });
-
-  document.getElementById("btn-sidebar")?.addEventListener("click", async () => {
+  sidebarButton?.addEventListener("click", async () => {
     const [tab] = await chrome.tabs.query({
       active: true,
       currentWindow: true,
@@ -38,10 +38,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
       window.close();
     } catch {
-      const button = document.getElementById("btn-sidebar");
-      if (button instanceof HTMLButtonElement) {
-        button.textContent = "Not available here";
-        button.disabled = true;
+      showStatusMessage("AppCommit only works on supported job application pages.");
+      if (sidebarButton instanceof HTMLButtonElement) {
+        sidebarButton.textContent = "Unsupported Page";
+        sidebarButton.disabled = true;
       }
     }
   });

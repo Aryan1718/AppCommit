@@ -1,9 +1,8 @@
+import { runtimeConfig } from "./config.js";
 import {
   checkAuth,
-  clearToken,
   getResumes,
   saveApplication,
-  saveToken,
   uploadResume,
 } from "./utils/api.js";
 import {
@@ -14,9 +13,8 @@ import {
   updateJobSession,
 } from "./utils/job-session.js";
 
-const TOKEN_EXPIRY_ALARM = "appcommit-token-expiry-check";
 const SESSION_KEY_PREFIX = "job_session_";
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = runtimeConfig.apiBaseUrl;
 const ALLOWED_API_METHODS = new Set(["GET", "POST"]);
 const ALLOWED_API_PATH_PREFIXES = [
   "/api/parse-llm",
@@ -53,12 +51,6 @@ function normalizeAuthLog(result) {
     authenticated: Boolean(result?.authenticated),
     reason: result?.reason ?? null,
   };
-}
-
-function normalizeStoreTokenPayload(message) {
-  const token = typeof message?.token === "string" && message.token.trim() ? message.token : null;
-  const tokenExpiresAt = typeof message?.tokenExpiresAt === "number" ? message.tokenExpiresAt : null;
-  return { token, tokenExpiresAt };
 }
 
 function validateResumePayload(resume) {
@@ -139,27 +131,6 @@ async function broadcastAuthMessage(type, payload = {}) {
       }
     }),
   );
-}
-
-async function checkForExpiringToken() {
-  const result = await chrome.storage.local.get("tokenExpiresAt");
-  const expiresAt = result?.tokenExpiresAt ?? null;
-
-  if (typeof expiresAt !== "number") {
-    return;
-  }
-
-  const timeUntilExpiry = expiresAt - Date.now();
-  const twoMinutes = 2 * 60 * 1000;
-
-  if (timeUntilExpiry > 0 && timeUntilExpiry < twoMinutes) {
-    console.log("[AppCommit Auth] Token expiring in less than 2 minutes");
-    await broadcastAuthMessage("TOKEN_EXPIRING_SOON");
-  }
-}
-
-function ensureTokenExpiryAlarm() {
-  chrome.alarms.create(TOKEN_EXPIRY_ALARM, { periodInMinutes: 5 });
 }
 
 async function cleanupStaleSessions() {
@@ -299,13 +270,10 @@ async function handleApiFetch(data) {
   }
 
   try {
-    const { token } = await chrome.storage.local.get("token");
-
     const response = await fetch(`${API_BASE_URL}${path}`, {
       method,
       headers: {
         "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       ...(body ? { body } : {}),
     });
@@ -315,11 +283,6 @@ async function handleApiFetch(data) {
       responseData = await response.json();
     } catch {
       responseData = null;
-    }
-
-    if (response.status === 401) {
-      await clearToken();
-      await broadcastAuthMessage("AUTH_EXPIRED", { reason: "token_expired" });
     }
 
     return {
@@ -360,18 +323,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
       if (type === "CHECK_AUTH") {
         const result = await checkAuth();
-        const normalized =
-          result?.reason === "not_authenticated"
-            ? { authenticated: false, reason: "no_token" }
-            : result;
-
-        console.log("[AppCommit Auth] CHECK_AUTH result:", normalizeAuthLog(normalized));
-        sendResponse(normalized);
+        console.log("[AppCommit Auth] CHECK_AUTH result:", normalizeAuthLog(result));
+        sendResponse(result);
         return;
       }
 
       if (type === "GET_JOB_DATA") {
         sendResponse(await getJobDataFromActiveTab());
+        return;
+      }
+
+      if (type === "GET_RUNTIME_CONFIG") {
+        sendResponse({
+          dashboardUrl: runtimeConfig.dashboardUrl,
+          dashboardAppUrl: runtimeConfig.dashboardAppUrl,
+        });
         return;
       }
 
@@ -436,30 +402,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         return;
       }
 
-      if (type === "STORE_TOKEN") {
-        const tokenPayload = normalizeStoreTokenPayload(message);
-        await saveToken(tokenPayload.token, {
-          tokenExpiresAt: tokenPayload.tokenExpiresAt,
-        });
-        sendResponse({ success: true });
-        return;
-      }
-
-      if (type === "CLEAR_TOKEN") {
-        await clearToken();
-        sendResponse({ success: true });
-        return;
-      }
-
-      if (type === "AUTH_EXPIRED") {
-        console.log("[AppCommit Auth] Token expired, notifying tabs");
-        await broadcastAuthMessage("AUTH_EXPIRED", {
-          reason: message?.reason ?? "token_expired",
-        });
-        sendResponse({ success: true });
-        return;
-      }
-
       sendResponse({ success: false, error: "Unknown message type" });
     } catch (error) {
       console.log("[AppCommit Auth] Background handler failed:", error);
@@ -470,29 +412,17 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
-chrome.alarms.onAlarm.addListener((alarm) => {
-  if (alarm.name !== TOKEN_EXPIRY_ALARM) {
-    return;
-  }
-
-  void checkForExpiringToken();
-});
-
 chrome.runtime.onInstalled.addListener(() => {
   void (async () => {
-    ensureTokenExpiryAlarm();
     await cleanupStaleSessions();
   })();
 });
 
 chrome.runtime.onStartup.addListener(() => {
   void (async () => {
-    ensureTokenExpiryAlarm();
     await cleanupStaleSessions();
   })();
 });
-
-ensureTokenExpiryAlarm();
 
 chrome.tabs.onRemoved.addListener((tabId) => {
   void (async () => {

@@ -229,24 +229,22 @@
   </div>
 
   <div class="ac-state hidden" id="ac-state-auth">
-    <div class="ac-auth-icon">🔐</div>
-    <p class="ac-auth-title" id="ac-auth-title">Sign in to AppCommit</p>
-    <p class="ac-auth-sub" id="ac-auth-sub">You need to be signed in to capture job snapshots.</p>
+    <div class="ac-auth-icon">⚙</div>
+    <p class="ac-auth-title" id="ac-auth-title">Finish workspace setup</p>
+    <p class="ac-auth-sub" id="ac-auth-sub">AppCommit needs its backend and dashboard running to capture job snapshots.</p>
 
     <div class="ac-auth-steps">
       <div class="ac-auth-step">
         <div class="ac-auth-step-num">1</div>
-        <div class="ac-auth-step-text">Click the button below to open the dashboard</div>
+        <div class="ac-auth-step-text">Start the backend on your machine</div>
       </div>
       <div class="ac-auth-step">
         <div class="ac-auth-step-num">2</div>
-        <div class="ac-auth-step-text">Sign in or create a free account</div>
+        <div class="ac-auth-step-text">Open the dashboard and connect it to your local backend</div>
       </div>
       <div class="ac-auth-step">
         <div class="ac-auth-step-num">3</div>
-        <div class="ac-auth-step-text">
-          Come back to this page — you'll be logged in automatically
-        </div>
+        <div class="ac-auth-step-text">Come back to this page and retry detection</div>
       </div>
     </div>
 
@@ -255,7 +253,7 @@
     </button>
 
     <button class="ac-btn-ghost" id="ac-check-auth-btn" type="button">
-      ↻ I just signed in — check again
+      ↻ Retry connection
     </button>
 
     <p class="ac-auth-reason" id="ac-auth-reason"></p>

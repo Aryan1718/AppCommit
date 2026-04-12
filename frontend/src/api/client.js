@@ -1,60 +1,17 @@
-import { supabase } from '../lib/supabase';
+const API_URL = import.meta.env.VITE_API_URL;
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-
-const getToken = async () => {
-  const {
-    data: { session },
-    error,
-  } = await supabase.auth.getSession();
-
-  if (error || !session) {
-    console.log('[Dashboard API] No session:', error?.message);
-    return null;
-  }
-
-  return session.access_token;
-};
+if (!API_URL) {
+  throw new Error('Missing VITE_API_URL environment variable.');
+}
 
 export const authFetch = async (path, options = {}) => {
-  const token = await getToken();
-
-  if (!token) {
-    window.location.href = '/login';
-    throw new Error('Not authenticated');
-  }
-
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
       ...(options.contentType === null ? {} : { 'Content-Type': options.contentType || 'application/json' }),
-      Authorization: `Bearer ${token}`,
       ...options.headers,
     },
   });
-
-  if (response.status === 401) {
-    console.log('[Dashboard API] 401 - forcing token refresh');
-
-    const { data, error } = await supabase.auth.refreshSession();
-
-    if (error || !data.session) {
-      console.log('[Dashboard API] Refresh failed, redirecting to login');
-      await supabase.auth.signOut();
-      window.location.href = '/login';
-      throw new Error('Session expired');
-    }
-
-    console.log('[Dashboard API] Token refreshed, retrying request');
-    return fetch(`${API_URL}${path}`, {
-      ...options,
-      headers: {
-        ...(options.contentType === null ? {} : { 'Content-Type': options.contentType || 'application/json' }),
-        Authorization: `Bearer ${data.session.access_token}`,
-        ...options.headers,
-      },
-    });
-  }
 
   return response;
 };

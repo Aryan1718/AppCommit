@@ -1,46 +1,6 @@
-const BASE_URL = "http://localhost:8000";
+import { runtimeConfig } from "../config.js";
 
-export class AuthError extends Error {
-  constructor(reason) {
-    super(`Auth error: ${reason}`);
-    this.name = "AuthError";
-    this.reason = reason;
-  }
-}
-
-export async function getToken() {
-  try {
-    const result = await chrome.storage.local.get("token");
-    return result?.token ?? null;
-  } catch (err) {
-    console.log("[AppCommit Auth] Error getting token:", err);
-    return null;
-  }
-}
-
-export async function saveToken(token, metadata = {}) {
-  const nextState = {
-    token,
-    ...metadata,
-  };
-
-  await chrome.storage.local.set(nextState);
-  await chrome.storage.local.remove("userEmail");
-  console.log("[AppCommit Auth] Token saved");
-}
-
-export async function clearToken() {
-  await chrome.storage.local.remove(["token", "tokenExpiresAt", "userEmail"]);
-  console.log("[AppCommit Auth] Token cleared");
-}
-
-async function notifyAuthExpired(reason = "token_expired") {
-  try {
-    await chrome.runtime.sendMessage({ type: "AUTH_EXPIRED", reason });
-  } catch (err) {
-    console.log("[AppCommit Auth] Could not broadcast auth expiry:", err);
-  }
-}
+const BASE_URL = runtimeConfig.apiBaseUrl;
 
 function buildHeaders(options = {}) {
   const headers = new Headers(options.headers ?? {});
@@ -103,33 +63,14 @@ export async function authFetch(path, options = {}) {
     }
   }
 
-  const token = await getToken();
-
-  if (!token) {
-    console.log("[AppCommit Auth] No token for request:", path);
-    throw new AuthError("not_authenticated");
-  }
-
   const headers = buildHeaders(options);
-  headers.set("Authorization", `Bearer ${token}`);
 
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
     headers,
   });
 
-  if (response.status === 401) {
-    console.log("[AppCommit Auth] 401 on:", path, "clearing token");
-    await clearToken();
-    await notifyAuthExpired("token_expired");
-    throw new AuthError("token_expired");
-  }
-
   return response;
-}
-
-function isAuthError(error) {
-  return error instanceof AuthError;
 }
 
 export async function checkAuth() {
@@ -145,10 +86,6 @@ export async function checkAuth() {
     console.log("[AppCommit Auth] Authenticated:", Boolean(data));
     return { authenticated: true, user: data };
   } catch (err) {
-    if (isAuthError(err)) {
-      return { authenticated: false, reason: err.reason };
-    }
-
     console.log("[AppCommit Auth] Network error:", err?.message ?? err);
     return { authenticated: false, reason: "network_error" };
   }
@@ -180,15 +117,6 @@ export async function saveApplication(data) {
 
     return { success: true, data: await response.json() };
   } catch (err) {
-    if (isAuthError(err)) {
-      return {
-        success: false,
-        status: 401,
-        error: err.message,
-        reason: err.reason,
-      };
-    }
-
     return {
       success: false,
       error: err instanceof Error ? err.message : "Application save request failed",
@@ -220,15 +148,6 @@ export async function uploadResume(payload) {
 
     return { success: true, data: await response.json() };
   } catch (err) {
-    if (isAuthError(err)) {
-      return {
-        success: false,
-        status: 401,
-        error: err.message,
-        reason: err.reason,
-      };
-    }
-
     return {
       success: false,
       error: err instanceof Error ? err.message : "Resume upload request failed",
@@ -251,9 +170,7 @@ export async function getResumes() {
     const data = await response.json();
     return Array.isArray(data) ? data : [];
   } catch (err) {
-    if (!isAuthError(err)) {
-      console.log("[AppCommit Auth] Resume list network error:", err);
-    }
+    console.log("[AppCommit Auth] Resume list network error:", err);
     return [];
   }
 }

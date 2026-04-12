@@ -5,11 +5,6 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 
-class UserIdentity(BaseModel):
-    id: UUID
-    email: str | None = None
-
-
 class TimelineEventResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
