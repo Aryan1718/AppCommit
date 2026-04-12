@@ -118,12 +118,5 @@ function normalizeText(value) {
 }
 
 async function handleExpiredAuth() {
-  console.log("[AppCommit Auth] LLM request received 401, clearing auth");
-  await chrome.storage.local.remove(["token", "tokenExpiresAt", "userEmail"]);
-
-  try {
-    await chrome.runtime.sendMessage({ type: "AUTH_EXPIRED", reason: "token_expired" });
-  } catch (err) {
-    console.log("[AppCommit Auth] Could not broadcast LLM auth expiry:", err);
-  }
+  console.log("[AppCommit API] LLM request received 401");
 }

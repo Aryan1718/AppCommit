@@ -1,20 +1,17 @@
 import asyncio
 from datetime import datetime, timezone
-import os
 from typing import Any
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, HTTPException, Response, status
 
-from dependencies import get_current_user
-from db.client import get_resume_bucket, supabase
+from db.client import get_resume_bucket, require_env, supabase
 from models.schemas import (
     ApplicationCreate,
     ApplicationDetailResponse,
     ApplicationResponse,
     ApplicationUpdate,
     TimelineEventResponse,
-    UserIdentity,
 )
 
 
@@ -28,13 +25,11 @@ async def _execute_query(builder: Any) -> Any:
 
 async def _create_timeline_event(
     *,
-    user_id: UUID,
     application_id: UUID,
     event_type: str,
     event_data: dict[str, Any],
 ) -> None:
     payload = {
-        "user_id": str(user_id),
         "application_id": str(application_id),
         "event_type": event_type,
         "event_data": event_data,
@@ -56,7 +51,7 @@ async def _get_resume_signed_url(storage_path: str | None) -> str | None:
         return None
     if signed_url.startswith("http://") or signed_url.startswith("https://"):
         return signed_url
-    return f"{os.getenv('SUPABASE_URL', '').rstrip('/')}{signed_url}"
+    return f"{require_env('SUPABASE_URL').rstrip('/')}{signed_url}"
 
 
 def _application_response_from_row(row: dict[str, Any], resume_url: str | None = None) -> ApplicationResponse:
@@ -78,12 +73,11 @@ def _application_response_from_row(row: dict[str, Any], resume_url: str | None =
     )
 
 
-async def _get_application_for_user(application_id: UUID, user_id: UUID) -> dict[str, Any]:
+async def _get_application(application_id: UUID) -> dict[str, Any]:
     query = (
         supabase.table("applications")
         .select("*")
         .eq("id", str(application_id))
-        .eq("user_id", str(user_id))
         .limit(1)
     )
     result = await _execute_query(query)
@@ -93,11 +87,10 @@ async def _get_application_for_user(application_id: UUID, user_id: UUID) -> dict
 
 
 @router.get("", response_model=list[ApplicationResponse])
-async def list_applications(user: UserIdentity = Depends(get_current_user)) -> list[ApplicationResponse]:
+async def list_applications() -> list[ApplicationResponse]:
     result = await _execute_query(
         supabase.table("applications")
         .select("*")
-        .eq("user_id", str(user.id))
         .order("applied_at", desc=True)
     )
     return [_application_response_from_row(row) for row in result.data or []]
@@ -106,15 +99,13 @@ async def list_applications(user: UserIdentity = Depends(get_current_user)) -> l
 @router.get("/{application_id}", response_model=ApplicationDetailResponse)
 async def get_application(
     application_id: UUID,
-    user: UserIdentity = Depends(get_current_user),
 ) -> ApplicationDetailResponse:
-    application = await _get_application_for_user(application_id, user.id)
+    application = await _get_application(application_id)
 
     timeline_result = await _execute_query(
         supabase.table("timeline_events")
         .select("*")
         .eq("application_id", str(application_id))
-        .eq("user_id", str(user.id))
         .order("created_at", desc=False)
     )
 
@@ -124,7 +115,6 @@ async def get_application(
             supabase.table("resumes")
             .select("storage_path")
             .eq("id", str(application["resume_id"]))
-            .eq("user_id", str(user.id))
             .limit(1)
         )
         if resume_result.data:
@@ -140,21 +130,18 @@ async def get_application(
 @router.post("", response_model=ApplicationResponse, status_code=status.HTTP_201_CREATED)
 async def create_application(
     payload: ApplicationCreate,
-    user: UserIdentity = Depends(get_current_user),
 ) -> ApplicationResponse:
     if payload.resume_id:
         resume_result = await _execute_query(
             supabase.table("resumes")
             .select("id, filename")
             .eq("id", str(payload.resume_id))
-            .eq("user_id", str(user.id))
             .limit(1)
         )
         if not resume_result.data:
-            raise HTTPException(status_code=404, detail="Resume not found for this user")
+            raise HTTPException(status_code=404, detail="Resume not found")
 
     insert_payload = {
-        "user_id": str(user.id),
         "company": payload.company,
         "job_title": payload.job_title,
         "job_description": payload.job_description,
@@ -171,13 +158,11 @@ async def create_application(
     row = result.data[0]
 
     await _create_timeline_event(
-        user_id=user.id,
         application_id=row["id"],
         event_type="application_created",
         event_data={"status": row["status"], "portal": row.get("portal")},
     )
     await _create_timeline_event(
-        user_id=user.id,
         application_id=row["id"],
         event_type="auto_saved",
         event_data={"source": "api"},
@@ -190,9 +175,8 @@ async def create_application(
 async def update_application(
     application_id: UUID,
     payload: ApplicationUpdate,
-    user: UserIdentity = Depends(get_current_user),
 ) -> ApplicationResponse:
-    existing = await _get_application_for_user(application_id, user.id)
+    existing = await _get_application(application_id)
 
     update_payload: dict[str, Any] = {"updated_at": datetime.now(timezone.utc).isoformat()}
 
@@ -208,7 +192,6 @@ async def update_application(
         supabase.table("applications")
         .update(update_payload)
         .eq("id", str(application_id))
-        .eq("user_id", str(user.id))
     )
     if not result.data:
         raise HTTPException(status_code=404, detail="Application not found")
@@ -217,14 +200,12 @@ async def update_application(
 
     if payload.status is not None and payload.status != existing["status"]:
         await _create_timeline_event(
-            user_id=user.id,
             application_id=application_id,
             event_type="status_change",
             event_data={"from": existing["status"], "to": payload.status},
         )
     if payload.notes is not None and payload.notes != existing.get("notes"):
         await _create_timeline_event(
-            user_id=user.id,
             application_id=application_id,
             event_type="note_added",
             event_data={"notes": payload.notes},
@@ -236,13 +217,11 @@ async def update_application(
 @router.delete("/{application_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_application(
     application_id: UUID,
-    user: UserIdentity = Depends(get_current_user),
 ) -> Response:
-    await _get_application_for_user(application_id, user.id)
+    await _get_application(application_id)
     await _execute_query(
         supabase.table("applications")
         .delete()
         .eq("id", str(application_id))
-        .eq("user_id", str(user.id))
     )
     return Response(status_code=status.HTTP_204_NO_CONTENT)

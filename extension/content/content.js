@@ -1,5 +1,3 @@
-const DASHBOARD_URL = "http://localhost:3000";
-const DASHBOARD_APP_URL = "http://localhost:3000/dashboard";
 const AUTO_SAVE_STORAGE_KEY = "appcommit_autosave_enabled";
 const LLM_TIMEOUT_MS = 10000;
 const SPA_WATCH_TIMEOUT_MS = 5 * 60 * 1000;
@@ -23,6 +21,7 @@ let formObserver = null;
 let supportModulesPromise = null;
 let sidebarResourcesPromise = null;
 let sidebarInstancePromise = null;
+let runtimeConfigPromise = null;
 let autoSaveEnabled = true;
 let currentJobData = null;
 let activePortal = "unknown";
@@ -58,6 +57,20 @@ function getHostname(url = window.location.href) {
   } catch {
     return window.location.hostname;
   }
+}
+
+async function getRuntimeConfig() {
+  if (!runtimeConfigPromise) {
+    runtimeConfigPromise = safeMessage({ type: "GET_RUNTIME_CONFIG" }, null).then((config) => {
+      if (!config?.dashboardUrl || !config?.dashboardAppUrl) {
+        throw new Error("Extension runtime config is unavailable");
+      }
+
+      return config;
+    });
+  }
+
+  return runtimeConfigPromise;
 }
 
 async function getSidebarForUrlChange(existingSidebar, currentUrl) {
@@ -148,7 +161,7 @@ function bindAuthStorageListener() {
   }
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName !== "local" || !changes.token) {
+    if (areaName !== "session" || !changes.token) {
       return;
     }
 
@@ -463,14 +476,15 @@ async function ensureSidebar() {
   if (!sidebarInstancePromise) {
     sidebarInstancePromise = (async () => {
       const autoSave = await getAutoSavePreference();
+      const runtimeConfig = await getRuntimeConfig();
       autoSaveEnabled = autoSave;
 
       const { initSidebar, html, cssHref } = await getSidebarResources();
       const sidebar = initSidebar({
         html,
         cssHref,
-        dashboardUrl: DASHBOARD_URL,
-        dashboardAppUrl: DASHBOARD_APP_URL,
+        dashboardUrl: runtimeConfig.dashboardUrl,
+        dashboardAppUrl: runtimeConfig.dashboardAppUrl,
         initialAutoSaveEnabled: autoSave,
         onOpenDashboard: openDashboard,
         onRetry: () => {
@@ -556,7 +570,7 @@ async function ensureSidebar() {
         document.addEventListener("appcommit-recheck-auth", async () => {
           console.log("[AppCommit] Re-checking auth...");
           sidebar.showState("ac-state-detecting");
-          sidebar.setDetectingMessage("Checking login status...");
+          sidebar.setDetectingMessage("Checking workspace connection...");
 
           const authResponse = await checkAuthStatus();
 
@@ -565,7 +579,7 @@ async function ensureSidebar() {
             return;
           }
 
-          console.log("[AppCommit] Authenticated! Running detection...");
+          console.log("[AppCommit] Workspace reachable. Running detection...");
           await runDetection(sidebar);
         });
         authRecheckListenerBound = true;
@@ -1502,27 +1516,6 @@ if (isContextValid()) {
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (!isContextValid()) {
       stopAllObservers();
-      return false;
-    }
-
-    if (message?.type === "AUTH_EXPIRED") {
-      console.log("[AppCommit Auth] Token expired mid-session");
-      void ensureSidebar().then((sidebar) => {
-        sidebar.showAuth(message?.reason ?? "token_expired");
-      });
-      return false;
-    }
-
-    if (message?.type === "TOKEN_EXPIRING_SOON") {
-      console.log("[AppCommit Auth] Token expiring soon, re-checking");
-      void (async () => {
-        const result = await checkAuthStatus();
-
-        if (!result?.authenticated) {
-          const sidebar = await ensureSidebar();
-          sidebar.showAuth(result.reason ?? "token_expired");
-        }
-      })();
       return false;
     }
 

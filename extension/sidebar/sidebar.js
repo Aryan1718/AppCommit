@@ -120,7 +120,7 @@ function buildApi(sidebar, tab, options) {
   });
 
   elements.openDashboard?.addEventListener("click", () => {
-    options.onOpenDashboard?.("http://localhost:5173");
+    options.onOpenDashboard?.(options.dashboardUrl || "");
   });
 
   elements.checkAuth?.addEventListener("click", () => {
@@ -367,14 +367,14 @@ function buildApi(sidebar, tab, options) {
     showAuth(reason) {
       const messages = {
         not_authenticated: {
-          title: "Sign in to AppCommit",
-          sub: "You need to be signed in to capture snapshots.",
+          title: "Finish workspace setup",
+          sub: "Start the backend and open the dashboard before capturing snapshots.",
           reason: "",
         },
         token_expired: {
-          title: "Session Expired",
-          sub: "Your session has expired. Please sign in again to continue.",
-          reason: "Your session expired. Sign in again.",
+          title: "Reconnect AppCommit",
+          sub: "The extension could not reach the workspace. Check your local backend and dashboard.",
+          reason: "Retry once your local services are running.",
         },
         network_error: {
           title: "Cannot Connect",
@@ -382,8 +382,8 @@ function buildApi(sidebar, tab, options) {
           reason: "",
         },
         no_token: {
-          title: "Sign in to AppCommit",
-          sub: "You need to be signed in to capture snapshots.",
+          title: "Finish workspace setup",
+          sub: "Start the backend and open the dashboard before capturing snapshots.",
           reason: "",
         },
       };

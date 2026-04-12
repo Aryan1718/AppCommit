@@ -6,25 +6,29 @@ from collections import defaultdict
 from datetime import datetime, timezone
 
 import anthropic
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, HTTPException, status
 
-from dependencies import get_current_user
 from models.schemas import (
     ParseRequest,
     ParseResponse,
-    UserIdentity,
 )
 
 
 router = APIRouter()
 DAILY_LIMIT = 20
 _rate_limit_store: dict[str, list[str]] = defaultdict(list)
+WORKSPACE_RATE_LIMIT_KEY = "workspace"
+
+
+def _require_env(name: str) -> str:
+    value = os.getenv(name)
+    if not value:
+        raise HTTPException(status_code=500, detail=f"{name} is not configured")
+    return value
 
 
 def _get_anthropic_client() -> anthropic.Anthropic:
-    api_key = os.getenv("ANTHROPIC_API_KEY")
-    if not api_key:
-        raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY is not configured")
+    api_key = _require_env("ANTHROPIC_API_KEY")
     return anthropic.Anthropic(api_key=api_key)
 
 
@@ -41,11 +45,8 @@ def _check_rate_limit(user_id: str) -> None:
 
 
 @router.post("/parse-llm", response_model=ParseResponse)
-async def parse_with_llm(
-    payload: ParseRequest,
-    user: UserIdentity = Depends(get_current_user),
-) -> ParseResponse:
-    _check_rate_limit(str(user.id))
+async def parse_with_llm(payload: ParseRequest) -> ParseResponse:
+    _check_rate_limit(WORKSPACE_RATE_LIMIT_KEY)
     client = _get_anthropic_client()
     start = time.time()
     sections: list[str] = []
@@ -113,7 +114,7 @@ Return exactly:
     try:
         message = await asyncio.to_thread(
             client.messages.create,
-            model=os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+            model=_require_env("ANTHROPIC_MODEL"),
             max_tokens=1500,
             messages=[{"role": "user", "content": prompt}],
         )

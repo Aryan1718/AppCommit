@@ -2,48 +2,40 @@
   "manifest_version": 3,
   "name": "AppCommit",
   "version": "1.0.0",
-  "description": "Captures job application details automatically across websites so you can save job snapshots and resumes.",
-
+  "description": "Captures job application details automatically across supported job sites so you can save job snapshots and resumes.",
   "icons": {
     "16": "icons/icon16.png",
     "48": "icons/icon48.png",
     "128": "icons/icon128.png"
   },
-
   "permissions": [
     "storage",
     "tabs",
     "alarms"
   ],
-
   "host_permissions": [
-    "<all_urls>"
+    "http://localhost:8000/*"
   ],
-
   "background": {
     "service_worker": "background.js",
     "type": "module"
   },
-
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
-      "js": ["content/content.js"],
+      "matches": [
+        "https://*.greenhouse.io/*",
+        "https://job-boards.greenhouse.io/*",
+        "https://boards.greenhouse.io/*",
+        "https://*.myworkdayjobs.com/*",
+        "https://*.lever.co/*"
+      ],
+      "js": [
+        "content/content.js"
+      ],
       "run_at": "document_idle",
       "all_frames": false
-    },
-    {
-      "matches": [
-        "https://www.appcommit.online/*",
-        "https://appcommit.online/*",
-        "http://localhost/*",
-        "http://127.0.0.1/*"
-      ],
-      "js": ["content/auth-sync.js"],
-      "run_at": "document_idle"
     }
   ],
-
   "web_accessible_resources": [
     {
       "resources": [
@@ -59,10 +51,15 @@
         "sidebar/sidebar.css",
         "sidebar/sidebar.html"
       ],
-      "matches": ["<all_urls>"]
+      "matches": [
+        "https://*.greenhouse.io/*",
+        "https://job-boards.greenhouse.io/*",
+        "https://boards.greenhouse.io/*",
+        "https://*.myworkdayjobs.com/*",
+        "https://*.lever.co/*"
+      ]
     }
   ],
-
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {
@@ -72,7 +69,6 @@
     },
     "default_title": "AppCommit"
   },
-
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }
