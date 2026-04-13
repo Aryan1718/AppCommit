@@ -121,10 +121,10 @@ function Home() {
                 <div className="flex items-start justify-between gap-4 border-b border-stone-900/10 pb-5">
                   <div>
                     <p className="eyebrow">Active record</p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-stone-950">Candidate dossier</h2>
+                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.05em] text-stone-950">Candidate Records</h2>
                   </div>
                   <div className="border border-stone-900/10 bg-stone-950 px-4 py-2 text-[11px] uppercase tracking-[0.24em] text-stone-100">
-                    private archive
+                    private records
                   </div>
                 </div>
 
@@ -152,8 +152,8 @@ function Home() {
                           stored
                         </span>
                       </div>
-                      <h3 className="mt-4 text-3xl font-semibold tracking-[-0.05em]">{card.company}</h3>
-                      <p className={`mt-2 text-sm ${index === 1 ? 'text-stone-300' : 'text-stone-600'}`}>{card.role}</p>
+                      <h3 className="mt-4 text-3xl font-semibold tracking-[-0.05em]">{card.role}</h3>
+                      <p className={`mt-2 text-sm font-medium ${index === 1 ? 'text-stone-300' : 'text-stone-600'}`}>{card.company}</p>
                       <p className={`mt-5 border-t pt-4 text-sm ${index === 1 ? 'border-stone-800 text-stone-400' : 'border-stone-900/10 text-stone-500'}`}>
                         {card.note}
                       </p>

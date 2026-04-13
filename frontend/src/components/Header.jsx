@@ -19,7 +19,7 @@ function Header() {
             </span>
             <div>
               <p className="text-2xl font-semibold tracking-[-0.06em]">AppCommit</p>
-              <p className="text-[10px] uppercase tracking-[0.28em] text-stone-500">private archive</p>
+              <p className="text-[10px] uppercase tracking-[0.28em] text-stone-500">Application Commit</p>
             </div>
           </Link>
           <span className="hidden rounded-full border border-stone-900/10 bg-white/55 px-3 py-1 text-[11px] uppercase tracking-[0.22em] text-stone-500 sm:inline-flex">

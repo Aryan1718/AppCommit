@@ -10,13 +10,13 @@ const formatDate = (value) =>
 
 function ApplicationCard({ application }) {
   return (
-    <article className="rounded-[1.4rem] border border-[color:var(--app-line)] bg-[rgba(255,255,255,0.76)] p-4 shadow-[0_18px_50px_rgba(18,18,18,0.05)] transition hover:border-[color:var(--app-accent)]/35 hover:bg-[rgba(255,255,255,0.84)]">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-        <div className="grid flex-1 gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] xl:items-center">
+    <article className="rounded-[1.4rem] border border-[color:var(--app-line)] bg-[rgba(255,255,255,0.76)] p-3 sm:p-4 shadow-[0_18px_50px_rgba(18,18,18,0.05)] transition hover:border-[color:var(--app-accent)]/35 hover:bg-[rgba(255,255,255,0.84)]">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="grid flex-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto] xl:items-center">
           <div className="min-w-0">
             <p className="text-[11px] uppercase tracking-[0.28em] text-stone-400">{application.portal}</p>
-            <p className="mt-2 truncate font-serif text-2xl text-stone-950">{application.company}</p>
-            <p className="mt-1 truncate text-sm text-stone-600">{application.jobTitle}</p>
+            <p className="mt-2 truncate font-serif text-xl sm:text-2xl text-stone-950">{application.jobTitle}</p>
+            <p className="mt-1 truncate text-sm font-medium text-stone-600">{application.company}</p>
           </div>
 
           <div className="min-w-0">
