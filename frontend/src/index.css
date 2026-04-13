@@ -84,6 +84,15 @@
     @apply w-full rounded-none px-4 py-3 text-sm placeholder:text-stone-400 focus:border-[color:var(--app-accent)];
   }
 
+  select.input {
+    @apply appearance-none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2357534e' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.75rem center;
+    background-repeat: no-repeat;
+    background-size: 1.25em 1.25em;
+    padding-right: 2.5rem;
+  }
+
   .button-primary {
     background: var(--app-ink);
     box-shadow: 0 14px 28px rgba(18, 18, 18, 0.1);

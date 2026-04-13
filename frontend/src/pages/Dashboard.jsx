@@ -13,13 +13,13 @@ const statCard = (count, label, note) => (
 const loadingCard = (key) => (
   <div
     key={key}
-    className="rounded-[1.4rem] border border-[color:var(--app-line)] bg-[rgba(255,255,255,0.76)] p-4 shadow-[0_18px_50px_rgba(18,18,18,0.05)]"
+    className="rounded-[1.4rem] border border-[color:var(--app-line)] bg-[rgba(255,255,255,0.76)] p-3 sm:p-4 shadow-[0_18px_50px_rgba(18,18,18,0.05)]"
   >
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.3fr)_minmax(0,1fr)_auto] xl:items-center">
+    <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-[minmax(0,1.5fr)_minmax(0,1.2fr)_minmax(0,1fr)_auto] xl:items-center">
       <div className="space-y-3">
-        <div className="h-4 w-20 animate-pulse rounded bg-stone-300/70" />
-        <div className="h-7 w-40 animate-pulse rounded bg-stone-300/70" />
-        <div className="h-4 w-48 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-3 w-20 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-7 w-48 animate-pulse rounded bg-stone-300/70" />
+        <div className="h-4 w-32 animate-pulse rounded bg-stone-300/70" />
       </div>
       <div className="space-y-3">
         <div className="h-4 w-16 animate-pulse rounded bg-stone-300/70" />
@@ -157,9 +157,6 @@ function Dashboard() {
                 <option value="offer">Offer</option>
                 <option value="rejected">Rejected</option>
               </select>
-              <div className="rounded-full border border-stone-900/10 bg-white/55 px-4 py-3 text-sm text-stone-500">
-                Status is secondary to the captured record.
-              </div>
             </div>
           </div>
         </div>

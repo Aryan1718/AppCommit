@@ -1,8 +1,8 @@
 const statusMap = {
   applied: 'border-stone-900/12 bg-stone-200/80 text-stone-800',
-  interview: 'border-[color:var(--app-accent)]/20 bg-[color:var(--app-accent)]/10 text-[color:var(--app-accent)]',
-  offer: 'border-[color:var(--app-accent)]/28 bg-[color:var(--app-accent)]/16 text-[color:var(--app-accent)]',
-  rejected: 'border-stone-900/10 bg-stone-200/70 text-stone-700',
+  interview: 'border-amber-200/80 bg-amber-100/60 text-amber-800',
+  offer: 'border-emerald-200/80 bg-emerald-100/60 text-emerald-800',
+  rejected: 'border-rose-200/80 bg-rose-100/60 text-rose-800',
 };
 
 const labelMap = {
