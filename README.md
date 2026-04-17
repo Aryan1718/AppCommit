@@ -25,15 +25,17 @@ When you get that interview invitation days or weeks later, you can instantly se
 
 ## 📸 Project Gallery
 
-<p align="center">
-  <img src="./ss/screenshot_1_landing.jpg" alt="AppCommit Landing Page" width="45%" />
-  <img src="./ss/screenshot_2_dashboard.jpg" alt="AppCommit Dashboard" width="45%" />
-</p>
+<div align="center">
+  <img src="./ss/screenshot_2_dashboard.png" alt="AppCommit Dashboard" width="100%" />
+</div>
 
-<p align="center">
-  <img src="./ss/screenshot_3_snapshots.jpg" alt="Application Snapshot" width="45%" />
-  <img src="./ss/screenshot_4_sidebar.jpg" alt="Extension Sidebar" width="45%" />
-</p>
+<br/>
+
+<div align="center">
+  <img src="./ss/screenshot_4_detail.png" alt="Application Snapshot" width="32%" />
+  <img src="./ss/screenshot_3_list.png" alt="Application List" width="32%" />
+  <img src="./ss/screenshot_5_resumes.png" alt="Resume Archive" width="32%" />
+</div>
 
 ## ✨ Key Features
 
